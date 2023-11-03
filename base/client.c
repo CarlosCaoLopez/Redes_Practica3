@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include "client.h"
-#include "getip.h"
 #include "loging.h"
 
 #define BUFFER_LEN 64
@@ -56,29 +55,12 @@ Client create_client(int domain, int type, int protocol, char* server_ip, uint16
     client.server_ip = (char *) calloc(strlen(server_ip) + 1, sizeof(char));
     strcpy(client.server_ip, server_ip);
 
-    /* Guardar el nombre del equipo en el que se ejecuta el cliente.
-     * No produce error crítico, por lo que no hay que salir */
-    if (gethostname(buffer, BUFFER_LEN)) {
-        perror("No se pudo obtener el nombre de host del cliente");
-    } else {
-        client.hostname = (char *) calloc(strlen(buffer) + 1, sizeof(char));
-        strcpy(client.hostname, buffer);
-    }
-
-    /* Guardar la IP externa del cliente.
-     * Tampoco supone un error crítico. */
-    if (!getip(buffer, BUFFER_LEN)) {
-        perror("No se pudo obtener la IP externa del cliente");
-    } else {
-        client.ip = (char *) calloc(strlen(buffer) + 1, sizeof(char));
-        strcpy(client.ip, buffer);
-    }
-
     /* Crear el socket del cliente */
     if ( (client.socket = socket(domain, type, protocol)) < 0) fail("No se pudo crear el socket");
 
     return client;
 }
+
 
 
 /**
@@ -89,14 +71,27 @@ Client create_client(int domain, int type, int protocol, char* server_ip, uint16
  *
  * @param client    Cliente a conectar.
  */
-void connect_to_server(Client client) {
+
+/*void connect_to_server(Client client) {
     if (connect(client.socket, (struct sockaddr *) &(client.server_address), sizeof(struct sockaddr_in)) < 0) fail("No se pudo conetar con el servidor");
 
     printf("Conectado con éxito al servidor %s por el puerto %d\n", client.server_ip, client.server_port);
 
     return;
-}
+}*/
 
+/**
+ * @brief   Envia mensaje al servidor
+ * 
+ */ 
+
+void send_message(Client client, char *message){
+    ssize_t send_bytes
+    if ((send_bytes = sendto(client.socket, message, sizeof(message), (struct sockaddr *) &(client.server_address), sizeof(struct sockaddr_in))) < 0) fail("No se pudo enviar el mensaje");
+    printf("Mensaje enviado con éxito al servidor %s por el puerto %d\n", send_bytes,client.server_ip, client.server_port);
+    printf("Mensaje enviado al servidor: %s\n (Size: %d)", message, send_bytes);
+    return;
+}
 
 /**
  * @brief   Cierra el cliente.
@@ -106,13 +101,14 @@ void connect_to_server(Client client) {
  *
  * @param client    Cliente a cerrar.
  */
+
 void close_client(Client* client) {
     /* Cerrar el socket del cliente */
     if (client->socket != -1) {
         if (close(client->socket)) fail("No se pudo cerrar el socket del cliente");
     }
 
-    if (client->hostname) free(client->hostname);
+    //if (client->hostname) free(client->hostname);
     if (client->ip) free(client->ip);
     if (client->server_ip) free(client->server_ip);
 

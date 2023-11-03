@@ -15,8 +15,8 @@ typedef struct {
     int domain;         /* Dominio de comunicación. Especifica la familia de protocolos que se usan para la comunicación */
     int type;           /* Tipo de protocolo usado para el socket */
     int protocol;       /* Protocolo particular usado en el socket */
-    char* hostname;     /* Nombre del equipo en el que está ejecutándose el cliente */
-    char* ip;           /* IP externa del cliente (en formato textual) */
+    //char* hostname;     /* Nombre del equipo en el que está ejecutándose el cliente */
+    //char* ip;           /* IP externa del cliente (en formato textual) */
     char* server_ip;    /* IP del servidor al que conectarse (en formato textual) */
     uint16_t port;      /* Puerto por el que envía conexiones el cliente (en orden de host, pensado para uso del servidor) */
     uint16_t server_port;   /* Puerto en el que el servidor escucha peticiones (en orden de host) */
@@ -43,6 +43,7 @@ typedef struct {
  *          fue creado, y con un socket abierto en el cual está listo para conectarse 
  *          al servidor con la IP y puerto especificados.
  */
+
 Client create_client(int domain, int type, int protocol, char* server_ip, uint16_t server_port);
 
 
@@ -54,8 +55,18 @@ Client create_client(int domain, int type, int protocol, char* server_ip, uint16
  *
  * @param client    Cliente a conectar.
  */
-void connect_to_server(Client client);
+//void connect_to_server(Client client);
 
+/**
+ * @brief   Conecta el cliente con el servidor.
+ *
+ * Envia mensaje especificado a traves del socket
+ *
+ * @param client    Cliente a conectar.
+ * @param message   Mensaje a enviar
+ */
+
+void send_message(Client client, char *message);
 
 /**
  * @brief   Cierra el cliente.
@@ -65,6 +76,7 @@ void connect_to_server(Client client);
  *
  * @param client    Cliente a cerrar.
  */
+
 void close_client(Client* client); 
 
 
