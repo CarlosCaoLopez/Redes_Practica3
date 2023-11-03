@@ -21,7 +21,7 @@ typedef struct {
     char* ip;       /* IP externa del servidor (en formato textual) */
     struct sockaddr_in listen_address;  /* Estructura con el dominio de comunicación, IPs a las que atender
                                            y puerto al que está asociado el socket */
-    FILE* log;      /* Archivo en el que guardar el registro de actividad del servidor */
+   // FILE* log;      /* Archivo en el que guardar el registro de actividad del servidor */
 } Server;
 
 
@@ -55,7 +55,7 @@ extern uint8_t terminate;           /* Vale 1 si llegó una señal de terminaci�
  *          y aceptar conexiones entrantes desde cualquier IP y del dominio y por puerto 
  *          especificados.
  */
-Server create_server(int domain, int type, int protocol, uint16_t port, int backlog, char* logfile);
+Server create_server(int domain, int type, int protocol, uint16_t port, int backlog);
 
 
 /**

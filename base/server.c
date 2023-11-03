@@ -71,7 +71,7 @@ static void signal_handler(int signum) {
  *          y aceptar conexiones entrantes desde cualquier IP y del dominio y por puerto 
  *          especificados.
  */
-Server create_server(int domain, int type, int protocol, uint16_t port, int backlog, char* logfile) {
+Server create_server(int domain, int type, int protocol, uint16_t port, int backlog) {
     Server server;
     char buffer[BUFFER_LEN] = {0};
 
@@ -90,7 +90,7 @@ Server create_server(int domain, int type, int protocol, uint16_t port, int back
 
     /* Abrimos el log para escritura.
      * Si no se puede abrir, avisamos y seguimos, ya que no es un error crítico. */
-    if (logfile) {
+/*    if (logfile) {
         if ( (server.log = fopen(logfile, "w")) == NULL)
             perror("No se pudo crear el log del servidor");
     }        
@@ -98,7 +98,7 @@ Server create_server(int domain, int type, int protocol, uint16_t port, int back
 
     /* Guardar el nombre del equipo en el que se ejecuta el servidor.
      * No produce error crítico, por lo que no hay que salir */
-    if (gethostname(buffer, BUFFER_LEN)) {
+/*    if (gethostname(buffer, BUFFER_LEN)) {
         perror("No se pudo obtener el nombre de host del servidor");
         log_printf(ANSI_COLOR_RED "Error al obtener el nombre de host.\n" ANSI_COLOR_RESET);
     } else {
@@ -109,14 +109,14 @@ Server create_server(int domain, int type, int protocol, uint16_t port, int back
 
     /* Guardar la IP externa del servidor.
      * Tampoco supone un error crítico. */
-    if (!getip(buffer, BUFFER_LEN)) {
+/*    if (!getip(buffer, BUFFER_LEN)) {
         perror("No se pudo obtener la IP externa del servidor");
         log_printf(ANSI_COLOR_RED "Error al obtener la IP externa del servidor.\n" ANSI_COLOR_RESET);
     } else {
         server.ip = (char *) calloc(strlen(buffer) + 1, sizeof(char));
         strcpy(server.ip, buffer);
         log_printf("IP externa del servidor configurada con éxito: %s.\n", server.ip);
-    }
+    }*/
 
     /* Crear el socket del servidor */
     if ( (server.socket = socket(domain, type, protocol)) < 0) {
@@ -137,7 +137,7 @@ Server create_server(int domain, int type, int protocol, uint16_t port, int back
     }
 
     /* Configurar el servidor para enviarse a sí mismo un SIGIO cuando se produzca actividad en el socket, para evitar bloqueos esperando por conexiones */
-    if (fcntl(server.socket, F_SETFL, O_ASYNC | O_NONBLOCK) < 0) {
+/*    if (fcntl(server.socket, F_SETFL, O_ASYNC | O_NONBLOCK) < 0) {
         log_printf(ANSI_COLOR_RED "Error al configurar el envío de SIGIO en el socket.\n" ANSI_COLOR_RESET);
         fail("No se pudo configurar el envío de SIGIO en el socket");
     }
@@ -164,7 +164,7 @@ Server create_server(int domain, int type, int protocol, uint16_t port, int back
         log_printf(ANSI_COLOR_RED "Error al establecer el manejo de la señal SIGTERM.\n" ANSI_COLOR_RESET);
         fail("No se pudo establecer el manejo de la señal SIGTERM");
     }
-
+*/
 
     printf("Servidor creado con éxito y listo para escuchar solicitudes de conexión.\n"
             "Hostname: %s; IP: %s; Puerto: %d\n\n", server.hostname, server.ip, server.port);
@@ -228,7 +228,7 @@ void listen_for_connection(Server server, Client* client) {
     printf("Cliente conectado desde %s:%u.\n", client->ip, client->port);
     log_printf("Cliente conectado desde %s:%u.\n", client->ip, client->port);
 
-    socket_io_pending--;    /* Una conexión ya manejada */
+   // socket_io_pending--;    /* Una conexión ya manejada */
 
     return;
 }
