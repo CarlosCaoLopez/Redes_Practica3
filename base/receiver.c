@@ -72,6 +72,9 @@ Receiver create_receiver(int domain, int type, int protocol, char* server_ip, ui
  * @param receiver    Receivere a conectar.
  */
 
+void recv_message(Receiver receiver, char message){
+    if()
+};
 /*void connect_to_server(Receiver receiver) {
     if (connect(receiver.socket, (struct sockaddr *) &(client.server_address), sizeof(struct sockaddr_in)) < 0) fail("No se pudo conetar con el servidor");
 

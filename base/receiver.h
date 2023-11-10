@@ -68,6 +68,18 @@ Receiver create_receiver(int domain, int type, int protocol, char* sender_ip, ui
 
 void send_message(Receiver receiver, char *message);
 
+
+/**
+ * @brief   Conecta el receivere con el servidor.
+ *
+ * Recibe mensaje  
+ *
+ * @param receiver    Receivere a conectar.
+ * @param message   Mensaje a enviar
+ */
+
+void recv_message(Receiver receiver, char message);
+
 /**
  * @brief   Cierra el receivere.
  *
