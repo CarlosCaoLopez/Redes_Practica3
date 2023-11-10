@@ -18,10 +18,15 @@
 
 /* Macro para imprimir mensaje de error y salir */
 #define fail(message) { perror(ANSI_COLOR_RED message); exit(EXIT_FAILURE); }
-/* Macro para imprimir en el log, si existe (debe llamarse server.log) */
-#define log_printf(format, ...) { if (server.log) fprintf(server.log, "%s " format , identify(), ##__VA_ARGS__); }
-/* Macro para imprimir en el log, si existe (debe llamarse server->log) */
-#define log_printfp(format, ...) { if (server->log) fprintf(server->log, "%s " format , identify(), ##__VA_ARGS__); }
+
+
+/* Comentado por no tener log ELIMINAR */
+/* Macro para imprimir en el log, si existe (debe llamarse sender.log) */
+//#define log_printf(format, ...) { if (sender.log) fprintf(sender.log, "%s " format , identify(), ##__VA_ARGS__); }
+///* Macro para imprimir en el log, si existe (debe llamarse sender->log) */
+//#define log_printfp(format, ...) { if (sender->log) fprintf(sender->log, "%s " format , identify(), ##__VA_ARGS__); }
+//
+
 
 /**
  * @brief   Devuelve una string formateada para identificar cuándo se produce un evento.

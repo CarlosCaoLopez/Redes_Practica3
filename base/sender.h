@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
-#include "client.h"
+#include "reciver.h"
 
 /**
  * Estructura que contiene toda la información relevante 
@@ -15,14 +15,18 @@ typedef struct {
     int domain;     /* Dominio de comunicación. Especifica la familia de protocolos que se usan para la comunicación */
     int type;       /* Tipo de protocolo usado para el socket */
     int protocol;   /* Protocolo particular usado en el socket */
-    uint16_t port;  /* Puerto en el que el servidor escucha peticiones (en orden de host) */
+    uint16_t own_port;  /* Puerto en el que el servidor escucha peticiones (en orden de host) */
+
+    uint16_t remote_port;  /* Puerto en el que el programa_2 recibirá datos (en orden de host) */
     int backlog;    /* Longitud máxima de la cola de conexiones pendientes (para sockets pasivos) */
     char* hostname; /* Nombre del equipo en el que está ejecutándose el servidor */
     char* ip;       /* IP externa del servidor (en formato textual) */
-    struct sockaddr_in listen_address;  /* Estructura con el dominio de comunicación, IPs a las que atender
-                                           y puerto al que está asociado el socket */
+    struct sockaddr_in own_address;  /* Estructura con el dominio de comunicación, IPs a las que atender*/
+
+    struct sockaddr_in remote_address;  /* Estructura con el dominio de comunicación, IPs a las que atender*/
+
    // FILE* log;      /* Archivo en el que guardar el registro de actividad del servidor */
-} Server;
+} Sender;
 
 
 /** 
@@ -55,7 +59,7 @@ extern uint8_t terminate;           /* Vale 1 si llegó una señal de terminaci�
  *          y aceptar conexiones entrantes desde cualquier IP y del dominio y por puerto 
  *          especificados.
  */
-Server create_server(int domain, int type, int protocol, uint16_t port, int backlog);
+Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port,struct sockaddr_in remote_address, int backlog);
 
 
 /**
@@ -71,12 +75,12 @@ Server create_server(int domain, int type, int protocol, uint16_t port, int back
  * Esta función no es responsable de liberar el cliente referenciado si este ya estuviese
  * iniciado, por lo que de ser así se debe llamar a close_client antes de invocar a esta función.
  * 
- * @param server    Servidor que poner a escuchar conexiones. Debe tener un socket
+ * @param sender    Servidor que poner a escuchar conexiones. Debe tener un socket
  *                  asociado marcado como pasivo.
  * @param client    Dirección en la que guardar la información del cliente conectado.
  *                  Guarda en el campo socket del cliente el nuevo socket conectado al cliente.
  */
-void listen_for_connection(Server server, Client* client);
+void listen_for_connection(Sender sender, Client* client);
 
 
 /**
@@ -85,9 +89,9 @@ void listen_for_connection(Server server, Client* client);
  * Cierra el socket asociado al servidor y libera toda la memoria
  * reservada para el servidor.
  *
- * @param server    Servidor a cerrar.
+ * @param sender    Servidor a cerrar.
  */
-void close_server(Server* server); 
+void close_sender(Sender* sender); 
 
 
 #endif  /* SERVER_H */
