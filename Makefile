@@ -13,61 +13,106 @@ HEADERS_DIR = base
 INCLUDES = -I$(HEADERS_DIR)
 
 # Archivos de cabecera para generar dependencias
-HEADERS = $(HEADERS_DIR)/sender.h $(HEADERS_DIR)/reciver.h $(HEADERS_DIR)/getip.h $(HEADERS_DIR)/loging.h
+HEADERS = $(HEADERS_DIR)/sender.h $(HEADERS_DIR)/receiver.h $(HEADERS_DIR)/getip.h $(HEADERS_DIR)/loging.h
 
-# Fuentes con las funcionalidades básicas de reciver y sender (implementaciones de los .h)
+# Fuentes con las funcionalidades básicas de cliente y servidor (implementaciones de los .h)
 COMMON = $(HEADERS:.h=.c)
 
-# Emisor y receptor básicos
-BASE = basic
+# Servidor y cliente básicos
+BASIC = basic
 
 ## Servidor básico
 ### Fuentes
-SRC_BASE_SENDER_SPECIFIC = $(BASE)/emisor.c
-SRC_BASE_SENDER = $(SRC_BASE_SENDER_SPECIFIC) $(COMMON)
+SRC_BASIC_SERVER_SPECIFIC = $(BASIC)/emisor.c
+SRC_BASIC_SERVER = $(SRC_BASIC_SERVER_SPECIFIC) $(COMMON)
 
 ### Objetos
-OBJ_BASE_SENDER = $(SRC_BASE_SENDER:.c=.o)
+OBJ_BASIC_SERVER = $(SRC_BASIC_SERVER:.c=.o)
 
 ### Ejecutable o archivo de salida
-OUT_BASE_SENDER = $(BASE)/sender
+OUT_BASIC_SERVER = $(BASIC)/emisor
 
 ## Cliente básico
 ### Fuentes
-SRC_BASE_RECIVER_SPECIFIC = $(BASE)/receptor.c
-SRC_BASE_RECIVER = $(SRC_BASE_RECIVER_SPECIFIC) $(COMMON)
+SRC_BASIC_CLIENT_SPECIFIC = $(BASIC)/receptor.c
+SRC_BASIC_CLIENT = $(SRC_BASIC_CLIENT_SPECIFIC) $(COMMON)
 
 ### Objetos
-OBJ_BASE_RECIVER = $(SRC_BASE_RECIVER:.c=.o)
+OBJ_BASIC_CLIENT = $(SRC_BASIC_CLIENT:.c=.o)
 
 ### Ejecutable o archivo de salida
-OUT_BASE_RECIVER = $(BASE)/reciver
+OUT_BASIC_CLIENT = $(BASIC)/receptor
 
+# Servidor y cliente de mayúsculas
+MAYUS = mayus
 
+## Servidor de mayúsculas
+### Fuentes
+SRC_MAYUS_SERVER_SPECIFIC = $(MAYUS)/emisormay.c
+SRC_MAYUS_SERVER = $(SRC_MAYUS_SERVER_SPECIFIC) $(COMMON)
+
+### Objetos
+OBJ_MAYUS_SERVER = $(SRC_MAYUS_SERVER:.c=.o)
+
+### Ejecutable o archivo de salida
+OUT_MAYUS_SERVER = $(MAYUS)/emisormay
+
+## Cliente básico
+### Fuentes
+SRC_MAYUS_CLIENT_SPECIFIC = $(MAYUS)/receptormay.c
+SRC_MAYUS_CLIENT = $(SRC_MAYUS_CLIENT_SPECIFIC) $(COMMON)
+
+### Objetos
+OBJ_MAYUS_CLIENT = $(SRC_MAYUS_CLIENT:.c=.o)
+
+### Ejecutable o archivo de salida
+OUT_MAYUS_CLIENT = $(MAYUS)/receptormay
 
 # Listamos todos los archivos de salida
-OUT = $(OUT_BASE_SENDER) $(OUT_BASE_RECIVER) 
+OUT = $(OUT_BASIC_SERVER) $(OUT_BASIC_CLIENT) $(OUT_MAYUS_SERVER) $(OUT_MAYUS_CLIENT)
 
+# Servidor remoto al que subir los archivos relacionados con servidores
+REMOTE_HOST = debian-server
+REMOTE_USER = pedro
+REMOTE_DIR = ~/ServidorRedes
+REMOTE_SRC_DIR = $(REMOTE_DIR)/src
+REMOTE_HEADERS_DIR = $(REMOTE_SRC_DIR)/server
+
+
+############
+#- REGLAS -#
+############
 
 # Regla por defecto: compila todos los ejecutables
 all: $(OUT)
 
 # Compila ambos servidores
-sender: $(OUT_BASE_SENDER) 
+server: $(OUT_BASIC_SERVER) $(OUT_MAYUS_SERVER)
 
 # Compila ambos clientes
-reciver: $(OUT_BASE_RECIVER) 
+client: $(OUT_BASIC_CLIENT) $(OUT_MAYUS_CLIENT)
 
 # Compila servidor y cliente básicos
-basic: $(OUT_BASE_SENDER) $(OUT_BASE_RECIVER)
+basic: $(OUT_BASIC_SERVER) $(OUT_BASIC_CLIENT)
+
+# Compila servidor y cliente de mayúsculas
+mayus: $(OUT_MAYUS_SERVER) $(OUT_MAYUS_CLIENT)
 
 # Genera el ejecutable del servidor básico, dependencia de sus objetos.
-$(OUT_BASE_SENDER): $(OBJ_BASE_SENDER)
-	$(CC) $(CFLAGS) -o $@ $(OBJ_BASE_SENDER)
+$(OUT_BASIC_SERVER): $(OBJ_BASIC_SERVER)
+	$(CC) $(CFLAGS) -o $@ $(OBJ_BASIC_SERVER)
 
 # Genera el ejecutable del cliente básico, dependencia de sus objetos.
-$(OUT_BASE_RECIVER): $(OBJ_BASE_RECIVER)
-	$(CC) $(CFLAGS) -o $@ $(OBJ_BASE_RECIVER) 
+$(OUT_BASIC_CLIENT): $(OBJ_BASIC_CLIENT)
+	$(CC) $(CFLAGS) -o $@ $(OBJ_BASIC_CLIENT) 
+
+# Genera el ejecutable del servidor de mayúsculas, dependencia de sus objetos.
+$(OUT_MAYUS_SERVER): $(OBJ_MAYUS_SERVER)
+	$(CC) $(CFLAGS) -o $@ $(OBJ_MAYUS_SERVER)
+
+# Genera el ejecutable del cliente de mayúsculas, dependencia de sus objetos.
+$(OUT_MAYUS_CLIENT): $(OBJ_MAYUS_CLIENT)
+	$(CC) $(CFLAGS) -o $@ $(OBJ_MAYUS_CLIENT)
 
 # Genera los ficheros objeto .o necesarios, dependencia de sus respectivos .c y todas las cabeceras.
 %.o: %.c $(HEADERS)
@@ -80,3 +125,6 @@ clean: cleanobj
 # Borra todos los ficheros objeto del directorio actual y todos sus subdirectorios
 cleanobj:
 	find . -name "*.o" -delete
+
+
+

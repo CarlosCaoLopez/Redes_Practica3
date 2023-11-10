@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 
     while (!terminate) {
         if (!socket_io_pending) pause();    /* Pausamos la ejecución hasta que se reciba una señal de I/O o de terminación */
-        listen_for_connection(sender, &receiver);
+       // listen_for_connection(sender, &receiver);
         if (receiver.socket == -1) continue;  /* Falsa alarma, no había conexiones pendientes o se recibió una señal de terminación */
 
         handle_connection(sender, receiver);

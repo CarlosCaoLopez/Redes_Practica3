@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
-#include "reciver.h"
+#include "receiver.h"
 
 /**
  * Estructura que contiene toda la información relevante 
@@ -80,7 +80,7 @@ Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint
  * @param client    Dirección en la que guardar la información del cliente conectado.
  *                  Guarda en el campo socket del cliente el nuevo socket conectado al cliente.
  */
-void listen_for_connection(Sender sender, Client* client);
+//void listen_for_connection(Sender sender, Client* client);
 
 
 /**
