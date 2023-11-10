@@ -59,7 +59,7 @@ extern uint8_t terminate;           /* Vale 1 si llegó una señal de terminaci�
  *          y aceptar conexiones entrantes desde cualquier IP y del dominio y por puerto 
  *          especificados.
  */
-Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port,struct sockaddr_in remote_address, int backlog);
+Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port,char* remote_address, int backlog);
 
 
 /**

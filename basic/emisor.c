@@ -23,8 +23,10 @@
 struct arguments {
     int argc;
     char** argv;
-    uint16_t* port;
+    uint16_t* own_port;
+    uint16_t* remote_port;
     int* backlog;
+    char* remote_address;
 };
 
 /**
@@ -61,20 +63,27 @@ void handle_connection(Sender sender, Receiver receiver);
 int main(int argc, char** argv) {
     Sender sender;
     Receiver receiver;
-    uint16_t port;
+    uint16_t own_port;
+    uint16_t remote_port;
     int backlog;
+    char remote_address[INET_ADDRSTRLEN];
+
     struct arguments args = {
         .argc = argc,
         .argv = argv,
-        .port = &port,
+        .own_port = &own_port,
+        .remote_port = &remote_port,
         .backlog = &backlog,
+        .remote_address = remote_address,
     };
 
     set_colors();
 
     process_args(args);
 
-    printf("Ejecutando servidor con parámetros: PORT=%u, BACKLOG=%d.\n\n", port, backlog);
+    
+
+    printf("Ejecutando emisor con parámetros: PORT=%u, BACKLOG=%d.\n\n", own_port, backlog);
     sender = create_sender(AF_INET, SOCK_STREAM, 0, own_port, remote_port, remote_address, backlog); /*Pasamos los argumentos a la funcion de crear el sender*/
 
     while (!terminate) {
@@ -98,13 +107,14 @@ int main(int argc, char** argv) {
 void handle_connection(Sender sender, Receiver receiver) {
     char message[MESSAGE_SIZE] = {0};
     ssize_t sent_bytes;
-
+    socklen_t length = sizeof(struct sockaddr_in);
+    
     printf("\nManejando la conexión del receiver %s:%u...\n", receiver.ip, receiver.port);
 
-    snprintf(message, MESSAGE_SIZE, "Mensaje enviado desde %s en %s:%u. Hola Mundo!\n", sender.hostname, sender.ip, sender.port);
+    snprintf(message, MESSAGE_SIZE, "Mensaje enviado desde %s en %s:%u. Hola Mundo!\n", sender.hostname, sender.ip, sender.own_port);
 
     /* Enviar el mensaje al receiver */
-    if ( (sent_bytes = sendto(receiver.socket, message, strlen(message) + 1, 0, sender.remote_address, sizeof(sender.remote_address))) < 0) fail("No se pudo enviar el mensaje");
+    if ( (sent_bytes = sendto(receiver.socket, message, strlen(message) + 1, 0, (struct sockaddr_in*) &sender.remote_address, length)) < 0) fail("No se pudo enviar el mensaje");
 }
 
 
@@ -132,36 +142,50 @@ static void process_args(struct arguments args) {
     char* current_arg;
 
     /* Inicializar los valores de puerto y backlog a sus valores por defecto */
-    *args.port = DEFAULT_PORT;
+    *args.own_port = DEFAULT_PORT;
     *args.backlog = DEFAULT_BACKLOG;
-    *args.logfile = DEFAULT_LOG;
+   // *args.logfile = DEFAULT_LOG;
 
     for (i = 1; i < args.argc; i++) { /* Procesamos los argumentos (sin contar el nombre del ejecutable) */
         current_arg = args.argv[i];
         if (current_arg[0] == '-') { /* Flag de opción */
             /* Manejar las opciones largas */
             if (current_arg[1] == '-') { /* Opción larga */
-                if (!strcmp(current_arg, "--port")) current_arg = "-p";
+                if (!strcmp(current_arg, "--own_port")) current_arg = "-p";
+                else if( (!strcmp(current_arg, "--remote_port"))) current_arg = "-r";
                 else if (!strcmp(current_arg, "--backlog")) current_arg = "-b";
-                else if (!strcmp(current_arg, "--log")) current_arg = "-l";
-                else if (!strcmp(current_arg, "--no-log")) current_arg = "-n";
+                else if (!strcmp(current_arg, "--address")) current_arg = "-a";
+               // else if (!strcmp(current_arg, "--no-log")) current_arg = "-n";
                 else if (!strcmp(current_arg, "--help")) current_arg = "-h";
             } 
             switch(current_arg[1]) {
-                case 'p':   /* Puerto */
+                case 'p':   /* Puerto del sender*/
                     if (++i < args.argc) {
-                        *args.port = atoi(args.argv[i]);
-                        if (*args.port < 0) {
+                        *args.own_port = atoi(args.argv[i]);
+                        if (*args.own_port < 0) {
                             fprintf(stderr, "El valor de puerto especificado (%s) no es válido.\n\n", args.argv[i]);
                             print_help(args.argv[0]);
                             exit(EXIT_FAILURE);
                         }
                     } else {
-                        fprintf(stderr, "Puerto no especificado tras la opción '-p'.\n\n");
+                        fprintf(stderr, "Puerto no especificado tras la opción '-p1'.\n\n");
                         print_help(args.argv[0]);
                         exit(EXIT_FAILURE);
                     }
                     break;
+                case 'r':   /* Puerto remoto */
+                    if (++i < args.argc) {
+                        *args.remote_port = atoi(args.argv[i]);
+                        if (*args.remote_port < 0) {
+                            fprintf(stderr, "El valor de puerto remoto especificado (%s) no es válido.\n\n", args.argv[i]);
+                            print_help(args.argv[0]);
+                            exit(EXIT_FAILURE);
+                        }
+                    } else {
+                        fprintf(stderr, "Puerto no especificado tras la opción '-p2'.\n\n");
+                        print_help(args.argv[0]);
+                        exit(EXIT_FAILURE);
+                    }
                 case 'b':   /* Backlog */
                     if (++i < args.argc) {
                         *args.backlog = atoi(args.argv[i]);
@@ -176,19 +200,19 @@ static void process_args(struct arguments args) {
                         exit(EXIT_FAILURE);
                     }
                     break;
-                case 'l':   /* Log */
+                 case 'a':   /* Dirección remota */
                     if (++i < args.argc) {
-                        *args.logfile = args.argv[i];
+                        strcpy(args.remote_address, args.argv[i]); /* Copia la ip*/
                     } else {
-                        fprintf(stderr, "Nombre del log no especificado tras la opción '-l'.\n\n");
+                        fprintf(stderr, "Dirección remota no especificada tras la opción '-a'.\n\n");
                         print_help(args.argv[0]);
                         exit(EXIT_FAILURE);
                     }
                     break;
-                case 'n':   /* No-log */
-                    *args.logfile = NULL;
-                    break;
-                case 'h':   /* Ayuda */
+               // case 'n':   /* No-log */
+               //     *args.logfile = NULL;
+               //     break;
+               // case 'h':   /* Ayuda */
                     print_help(args.argv[0]);
                     exit(EXIT_SUCCESS);
                 default:
@@ -197,8 +221,8 @@ static void process_args(struct arguments args) {
                     exit(EXIT_FAILURE);
             }
         } else if (i == 1) {    /* Se especificó el puerto como primer argumento */
-            *args.port = atoi(args.argv[i]);
-            if (*args.port < 0) {
+            *args.own_port = atoi(args.argv[i]);
+            if (*args.own_port < 0) {
                 fprintf(stderr, "El valor de puerto especificado como primer argumento (%s) no es válido.\n\n", args.argv[i]);
                 print_help(args.argv[0]);
                 exit(EXIT_FAILURE);

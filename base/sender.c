@@ -71,7 +71,7 @@ static void signal_handler(int signum) {
  *          y aceptar conexiones entrantes desde cualquier IP y del dominio y por puerto 
  *          especificados.
  */
-Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port, struct sockaddr_in remote_address, int backlog) {
+Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port,char* remote_address, int backlog) {
     Sender sender;
     char buffer[BUFFER_LEN] = {0};
 
@@ -86,8 +86,11 @@ Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint
         .own_address.sin_family = domain,
         .own_address.sin_port = htons(own_port),
         .own_address.sin_addr.s_addr = htonl(INADDR_ANY),
-        .remote_address = remote_address /* El argumento se tiene por procesado en el main */  
+        .remote_address.sin_family = domain,
+        .remote_address.sin_port = htons(remote_port),
  };
+
+    inet_pton(domain, remote_address, &sender.remote_address.sin_addr); /* Inicializamos la direccion remota */ 
 
     /* Abrimos el log para escritura.
      * Si no se puede abrir, avisamos y seguimos, ya que no es un error crítico. */
