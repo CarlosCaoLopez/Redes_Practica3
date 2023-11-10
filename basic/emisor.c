@@ -104,7 +104,7 @@ void handle_connection(Sender sender, Receiver receiver) {
     snprintf(message, MESSAGE_SIZE, "Mensaje enviado desde %s en %s:%u. Hola Mundo!\n", sender.hostname, sender.ip, sender.port);
 
     /* Enviar el mensaje al receiver */
-    if ( (sent_bytes = sendto(receiver.socket, message, strlen(message) + 1, 0, sender.remote_address)) < 0) fail("No se pudo enviar el mensaje");
+    if ( (sent_bytes = sendto(receiver.socket, message, strlen(message) + 1, 0, sender.remote_address, sizeof(sender.remote_address))) < 0) fail("No se pudo enviar el mensaje");
 }
 
 

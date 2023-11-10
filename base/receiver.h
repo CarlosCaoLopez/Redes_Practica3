@@ -20,7 +20,7 @@ typedef struct {
     char* sender_ip;    /* IP del servidor al que conectarse (en formato textual) */
     uint16_t port;      /* Puerto por el que envía conexiones el receivere (en orden de host, pensado para uso del servidor) */
     uint16_t sender_port;   /* Puerto en el que el servidor escucha peticiones (en orden de host) */
-    struct sockaddr_in address;         /* Estructura con el dominio de comunicación e IP y puerto por los que se comunica el receivere (pensada para uso del servidor) */
+    struct sockaddr_in address;       /* Estructura con el dominio de comunicación e IP y puerto por los que se comunica el receivere (pensada para uso del servidor) */
     struct sockaddr_in sender_address;  /* Estructura con el dominio de comunicación e IP y puerto del servidor al que conectarse */
 } Receiver;
 
@@ -77,8 +77,6 @@ void send_message(Receiver receiver, char *message);
  * @param receiver    Receivere a conectar.
  * @param message   Mensaje a enviar
  */
-
-void recv_message(Receiver receiver, char message);
 
 /**
  * @brief   Cierra el receivere.

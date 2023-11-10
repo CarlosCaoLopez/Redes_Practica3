@@ -83,8 +83,8 @@ int main(int argc, char** argv){
 
 void handle_data(Receiver receiver){
     ssize_t recv_bytes
-    if ((recv_bytes = recv_message(client.socket, message, sizeof(message), (struct sockaddr *) &(client.server_address), sizeof(struct sockaddr_in))) < 0) fail("No se pudo enviar el mensaje");
-    printf("Mensaje recibido de %d bytes con éxito al servidor %s por el puerto %d\n", recv_bytes,client.server_ip, client.server_port);
+    if ((recv_bytes = recvfrom(receiver.socket, message, sizeof(message), 0, (struct sockaddr *) &(receiver.server_address), sizeof(struct sockaddr_in))) < 0) fail("No se pudo enviar el mensaje");
+    printf("Mensaje recibido de %d bytes con éxito al servidor %s por el puerto %d\n", recv_bytes,receiver.server_ip, receiver.server_port);
     printf("Mensaje enviado al servidor: %s\n (Size: %d)", message);
     return;
 }
