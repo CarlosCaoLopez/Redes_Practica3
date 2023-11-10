@@ -56,20 +56,20 @@ void handle_data(Receiver receiver);
 
 int main(int argc, char** argv){
 	Receiver receiver;
-	char server_ip[INET_ADDRSTRLEN];
-    uint16_t server_port;
+	char sender_ip[INET_ADDRSTRLEN];
+    uint16_t sender_port;
     struct arguments args = {
         .argc = argc,
         .argv = argv,
-        .server_ip = server_ip,
-        .server_port = &server_port
+        .sender_ip = sender_ip,
+        .sender_port = &sender_port
     };
 
     set_colors();
 	
     process_args(args);
 
-	receiver = create_receiver(AF_INET, SOCK_STREAM, 0, server_ip, server_port);
+	receiver = create_receiver(AF_INET, SOCK_STREAM, 0, sender_ip, sender_port);
 
 	connect_to_server(receiver); 
 
@@ -83,8 +83,8 @@ int main(int argc, char** argv){
 
 void handle_data(Receiver receiver){
     ssize_t recv_bytes
-    if ((recv_bytes = recvfrom(receiver.socket, message, sizeof(message), 0, (struct sockaddr *) &(receiver.server_address), sizeof(struct sockaddr_in))) < 0) fail("No se pudo enviar el mensaje");
-    printf("Mensaje recibido de %d bytes con éxito al servidor %s por el puerto %d\n", recv_bytes,receiver.server_ip, receiver.server_port);
+    if ((recv_bytes = recvfrom(receiver.socket, message, sizeof(message), 0, (struct sockaddr *) &(receiver.sender_address), sizeof(struct sockaddr_in))) < 0) fail("No se pudo enviar el mensaje");
+    printf("Mensaje recibido de %d bytes con éxito al servidor %s por el puerto %d\n", recv_bytes,receiver.sender_ip, receiver.sender_port);
     printf("Mensaje enviado al servidor: %s\n (Size: %d)", message);
     return;
 }
