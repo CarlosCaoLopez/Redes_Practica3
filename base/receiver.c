@@ -31,9 +31,9 @@
  *          fue creado, y con un socket abierto en el cual está listo para conectarse 
  *          al servidor con la IP y puerto especificados.
  */
-Receiver create_receiver(int domain, int type, int protocol, char* sender_ip, uint16_t sender_port) {
+Receiver create_receiver(int domain, int type, int protocol, uint16_t receiver_port) {
     Receiver receiver;
-    char buffer[BUFFER_LEN] = {0};
+    //char buffer[BUFFER_LEN] = {0};
 
     memset(&receiver, 0, sizeof(Receiver));     /* Inicializar los campos a 0 */
 
@@ -41,21 +41,30 @@ Receiver create_receiver(int domain, int type, int protocol, char* sender_ip, ui
         .domain = domain,
         .type = type,
         .protocol = protocol,
-        .sender_port = sender_port,
-        .sender_address.sin_family = domain,
-        .sender_address.sin_port = htons(sender_port),
+        .receiver_port = receiver_port,
+        .receiver_address.sin_family = domain,
+        .receiver_address.sin_port = htons(receiver_port),
+        .receiver_address.sin_addr = INADDR_ANY,
     };
-    if (inet_pton(receiver.domain, sender_ip, &(receiver.sender_address.sin_addr)) != 1) {  /* La string no se pudo traducir a una IP válida */
+  /*  if (inet_pton(receiver.domain, receiver_ip, &(receiver.receiver_address.sin_addr)) != 1) {   //La string no se pudo traducir a una IP válida 
         fprintf(stderr, "La IP especificada no es válida\n\n");
         exit(EXIT_FAILURE);
-    }
+    }*/
 
-    /* Guardar la IP del servidor en formato textual */
-    receiver.sender_ip = (char *) calloc(strlen(sender_ip) + 1, sizeof(char));
-    strcpy(receiver.sender_ip, sender_ip);
+    /* Guardar la IP propia en formato textual */
+   // receiver.ip = (char *) calloc(strlen(receiver_ip) + 1, sizeof(char));
+    //strcpy(receiver.ip, receiver_ip);
+    
+    /*Reservamos memoria para la IP del emsisor */
+    receiver.sender_ip = (char *) calloc(INET_ADDRSTRLEN, sizeof(char));
 
-    /* Crear el socket del receivere */
+    /* Crear el socket del receiver */
     if ( (receiver.socket = socket(domain, type, protocol)) < 0) fail("No se pudo crear el socket");
+    
+    /* Asignar IPs a las que escuchar y número de puerto por el que atender peticiones (bind) */
+    if (bind(receiver.socket, (struct sockaddr *) &receiver.receiver_address, sizeof(struct sockaddr_in)) < 0) {
+        fail("No se pudo asignar dirección IP");
+    }
 
     return receiver;
 }
@@ -102,7 +111,7 @@ void close_receiver(Receiver* receiver) {
     }
 
     //if (receiver->hostname) free(receiver->hostname);
-    if (receiver->ip) free(receiver->ip);
+    //if (receiver->ip) free(receiver->ip);
     if (receiver->sender_ip) free(receiver->sender_ip);
 
     /* Limpiar la estructura poniendo todos los campos a 0 */

@@ -16,11 +16,11 @@ typedef struct {
     int type;           /* Tipo de protocolo usado para el socket */
     int protocol;       /* Protocolo particular usado en el socket */
     //char* hostname;     /* Nombre del equipo en el que está ejecutándose el receivere */
-    char* ip;           /* IP externa del receivere (en formato textual) */
+    //char* ip;           /* IP externa del receivere (en formato textual) */
     char* sender_ip;    /* IP del servidor al que conectarse (en formato textual) */
-    uint16_t port;      /* Puerto por el que envía conexiones el receivere (en orden de host, pensado para uso del servidor) */
+    uint16_t receiver_port;      /* Puerto por el que envía conexiones el receivere (en orden de host, pensado para uso del servidor) */
     uint16_t sender_port;   /* Puerto en el que el servidor escucha peticiones (en orden de host) */
-    struct sockaddr_in address;       /* Estructura con el dominio de comunicación e IP y puerto por los que se comunica el receivere (pensada para uso del servidor) */
+    struct sockaddr_in receiver_address;       /* Estructura con el dominio de comunicación e IP y puerto por los que se comunica el receivere (pensada para uso del servidor) */
     struct sockaddr_in sender_address;  /* Estructura con el dominio de comunicación e IP y puerto del servidor al que conectarse */
 } Receiver;
 
@@ -44,7 +44,7 @@ typedef struct {
  *          al servidor con la IP y puerto especificados.
  */
 
-Receiver create_receiver(int domain, int type, int protocol, char* sender_ip, uint16_t sender_port);
+Receiver create_receiver(int domain, int type, int protocol, uint16_t receiver_port);
 
 
 /**

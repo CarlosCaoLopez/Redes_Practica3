@@ -5,11 +5,13 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 #include "receiver.h"
 #include "loging.h"
 
 #define MAX_BYTES_RECV 128
+#define DEFAULT_PORT 8500
 
 /**
  * Estructura de datos para pasar a la función process_args.
@@ -20,8 +22,7 @@
 struct arguments {
     int argc;
     char** argv;
-    char* sender_ip;
-    uint16_t* sender_port;
+    uint16_t* receiver_port;
 };
 
 /**
@@ -56,20 +57,18 @@ void handle_data(Receiver receiver);
 
 int main(int argc, char** argv){
 	Receiver receiver;
-	char sender_ip[INET_ADDRSTRLEN];
-    uint16_t sender_port;
+    uint16_t receiver_port;
     struct arguments args = {
         .argc = argc,
         .argv = argv,
-        .sender_ip = sender_ip,
-        .sender_port = &sender_port
+        .receiver_port = &receiver_port
     };
 
     set_colors();
 	
     process_args(args);
 
-	receiver = create_receiver(AF_INET, SOCK_STREAM, 0, sender_ip, sender_port);
+	receiver = create_receiver(AF_INET, SOCK_DGRAM, 0, receiver_port);
 
     //connect_to_sender(receiver); 
     
@@ -87,7 +86,9 @@ void handle_data(Receiver receiver){
     char message[MAX_BYTES_RECV];
 
     if ((recv_bytes = recvfrom(receiver.socket, message, MAX_BYTES_RECV, 0, (struct sockaddr *) &(receiver.sender_address), &address_size)) < 0) fail("No se pudo enviar el mensaje");
-    printf("Mensaje recibido de %ld bytes con éxito al emisor %s por el puerto %d\n", recv_bytes,receiver.sender_ip, receiver.sender_port);
+    /* Guardamos la ip del emisor en formato textual*/
+    inet_ntop(receiver.domain, &receiver.sender_address.sin_addr, receiver.sender_ip, INET_ADDRSTRLEN);
+    printf("Mensaje recibido de %ld bytes con éxito al emisor %s por el puerto %d\n", recv_bytes, receiver.sender_ip, receiver.receiver_port);
     return;
 }
 
@@ -109,15 +110,18 @@ static void print_help(char* exe_name){
 static void process_args(struct arguments args) {
     int i;
     char* current_arg;
-    uint8_t set_ip = 0, set_port = 0;   /* Flags para saber si se setearon la IP y puerto */
 
+
+    /* Inicializar los valores de puerto y backlog a sus valores por defecto */
+    *args.receiver_port = DEFAULT_PORT;
+ 
     for (i = 1; i < args.argc; i++) { /* Procesamos los argumentos (sin contar el nombre del ejecutable) */
         current_arg = args.argv[i];
         if (current_arg[0] == '-') { /* Flag de opción */
             /* Manejar las opciones largas */
             if (current_arg[1] == '-') { /* Opción larga */
                // if (!strcmp(current_arg, "--IP") || !strcmp(current_arg, "--ip")) current_arg = "-i";
-                else if (!strcmp(current_arg, "--port")) current_arg = "-p";
+                if (!strcmp(current_arg, "--port")) current_arg = "-p";
                 else if (!strcmp(current_arg, "--help")) current_arg = "-h";
             } 
             switch(current_arg[1]) {
@@ -135,13 +139,12 @@ static void process_args(struct arguments args) {
               //      break;
                   case 'p':   /* Puerto */
                     if (++i < args.argc) {
-                        *args.sender_port = atoi(args.argv[i]); /* Aqui necesito el puerto del programa que recibe!*/
-                        if (*args.sender_port < 0) {
+                        *args.receiver_port = atoi(args.argv[i]);
+                        if (*args.receiver_port < 0) {
                             fprintf(stderr, "El valor de puerto especificado (%s) no es válido.\n\n", args.argv[i]);
                             print_help(args.argv[0]);
                             exit(EXIT_FAILURE);
                         }
-                        set_port = 1;
                     } else {
                         fprintf(stderr, "Puerto no especificado tras la opción '-p'.\n\n");
                         print_help(args.argv[0]);
@@ -156,25 +159,20 @@ static void process_args(struct arguments args) {
                     print_help(args.argv[0]);
                     exit(EXIT_FAILURE);
             }
-        } else if (i == 1) {    /* Se especificó la IP como primer argumento */
-            if (!strcmp(args.argv[i], "localhost")) args.argv[i] = "127.0.0.1"; /* Permitir al receivere indicar localhost como IP */
-            strncpy(args.sender_ip, args.argv[i], INET_ADDRSTRLEN);
-            set_ip = 1;
-        } else if (i == 2) {    /* Se especificó el puerto como segundo argumento */
-            *args.sender_port = atoi(args.argv[i]);
-            if (*args.sender_port < 0) {
+
+     //   } else if (i == 1) {    /* Se especificó la IP como primer argumento */
+     //       if (!strcmp(args.argv[i], "localhost")) args.argv[i] = "127.0.0.1"; /* Permitir al receivere indicar localhost como IP */
+     //       strncpy(args.sender_ip, args.argv[i], INET_ADDRSTRLEN);
+     //       set_ip = 1;
+        } else if (i == 1) {    /* Se especificó el puerto como primer argumento */
+            *args.receiver_port = atoi(args.argv[i]);
+            if (*args.receiver_port < 0) {
                 fprintf(stderr, "El valor de puerto especificado (%s) no es válido.\n\n", args.argv[i]);
                 print_help(args.argv[0]);
                 exit(EXIT_FAILURE);
             }
-            set_port = 1;
         }
     }
 
-    if (!set_ip || !set_port) {
-        fprintf(stderr, "%s%s\n",   (set_ip ? "" : "No se especificó la IP del emisor al que conectarse.\n"), 
-                                    (set_port ? "" : "No se especificó el puerto del emisor al que conectarse.\n"));
-        print_help(args.argv[0]);
-        exit(EXIT_FAILURE);
-    }
+
 }
