@@ -11,61 +11,28 @@
 
 #define MESSAGE_SIZE 128
 #define DEFAULT_PORT 8000
-//#define DEFAULT_BACKLOG 16
 #define DEFAULT_LOG "log"
 
-/**
- * Estructura de datos para pasar a la función process_args.
- * Debe contener siempre los campos int argc, char** argv, provenientes de main,
- * y luego una cantidad variable de punteros a las variables que se quieran inicializar
- * a partir de la entrada del programa.
- */
 struct arguments {
     int argc;
     char** argv;
     uint16_t* own_port;
     uint16_t* remote_port;
-  //  int* backlog;
     char* remote_address;
 };
 
-/**
- * @brief   Procesa los argumentos del main
- *
- * Procesa los argumentos proporcionados al programa por línea de comandos,
- * e inicializa las variables del programa necesarias acorde a estos.
- *
- * @param args  Estructura con los argumentos del programa y punteros a las
- *              variables que necesitan inicialización.
- */
+
 static void process_args(struct arguments args);
 
-/**
- * @brief   Imprime la ayuda del programa
- *
- * @param exe_name  Nombre del ejecutable (argv[0])
- */
+
 static void print_help(char* exe_name);
 
-/**
- * @brief   Maneja la conexión desde el lado del servidor.
- *
- * Envía un mensaje al receivere diciéndole que se aceptó su conexión
- * y con la información del servidor.
- *
- * @param sender    Servidor que maneja la conexión.
- * @param receiver    Receivere conectado que solicita el servicio.
- */
 void handle_data(Sender sender);
-
-
 
 int main(int argc, char** argv) {
     Sender sender;
-   // Receiver receiver;
     uint16_t own_port;
     uint16_t remote_port;
-   // int backlog;
     char remote_address[INET_ADDRSTRLEN];
 
 
@@ -74,7 +41,6 @@ int main(int argc, char** argv) {
         .argv = argv,
         .own_port = &own_port,
         .remote_port = &remote_port,
-       // .backlog = &backlog,
         .remote_address = remote_address,
     };
 
@@ -89,17 +55,6 @@ int main(int argc, char** argv) {
 
     handle_data(sender);
 
-//    while (!terminate) {
-//        if (!socket_io_pending) pause();    /* Pausamos la ejecución hasta que se reciba una señal de I/O o de terminación */
-//       // listen_for_connection(sender, &receiver);
-//        if (receiver.socket == -1) continue;  /* Falsa alarma, no había conexiones pendientes o se recibió una señal de terminación */
-//
-//        handle_connection(sender, receiver);
-//
-//        printf("\nCerrando la conexión del receivere %s:%u.\n\n", receiver.ip, receiver.port);
-//        close_receiver(&receiver);  /* Ya hemos gestionado al receivere, podemos olvidarnos de él */
-//    }
-//
     printf("\nCerrando el emisor y saliendo...\n");
     close_sender(&sender);
     exit(EXIT_SUCCESS);
@@ -115,7 +70,6 @@ void handle_data(Sender sender) {
 
     snprintf(message, MESSAGE_SIZE, "Mensaje enviado desde %s en %s:%u. Hola Mundo!\n", sender.hostname, sender.ip, sender.own_port);
 
-    /* Enviar el mensaje al receiver */
     if ( (sent_bytes = sendto(sender.socket, message, strlen(message) + 1, 0, (struct sockaddr *) &sender.remote_address, length)) < 0) fail("No se pudo enviar el mensaje");
 }
 
@@ -145,8 +99,6 @@ static void process_args(struct arguments args) {
 
     /* Inicializar los valores de puerto y backlog a sus valores por defecto */
     *args.own_port = DEFAULT_PORT;
-   // *args.backlog = DEFAULT_BACKLOG;
-   // *args.logfile = DEFAULT_LOG;
 
     for (i = 1; i < args.argc; i++) { /* Procesamos los argumentos (sin contar el nombre del ejecutable) */
         current_arg = args.argv[i];
@@ -154,10 +106,8 @@ static void process_args(struct arguments args) {
             /* Manejar las opciones largas */
             if (current_arg[1] == '-') { /* Opción larga */
                 if (!strcmp(current_arg, "--own_port")) current_arg = "-p";
-                else if( (!strcmp(current_arg, "--remote_port"))) current_arg = "-r";
-               // else if (!strcmp(current_arg, "--backlog")) current_arg = "-b";
-                else if (!strcmp(current_arg, "--address")) current_arg = "-a";
-               // else if (!strcmp(current_arg, "--no-log")) current_arg = "-n";
+                else if( (!strcmp(current_arg, "--remote_port"))) current_arg = "-r";               
+                else if (!strcmp(current_arg, "--address")) current_arg = "-a";             
                 else if (!strcmp(current_arg, "--help")) current_arg = "-h";
             } 
             switch(current_arg[1]) {
@@ -189,20 +139,6 @@ static void process_args(struct arguments args) {
                         exit(EXIT_FAILURE);
                     }
                     break;
-               // case 'b':   /* Backlog */
-               //     if (++i < args.argc) {
-               //         *args.backlog = atoi(args.argv[i]);
-               //         if (*args.backlog < 0) {
-               //             fprintf(stderr, "El valor de backlog especificado (%s) no es válido.\n\n", args.argv[i]);
-               //             print_help(args.argv[0]);
-               //             exit(EXIT_FAILURE);
-               //         }
-               //     } else {
-               //         fprintf(stderr, "Tamaño del backlog no especificado tras la opción '-b'.\n\n");
-               //         print_help(args.argv[0]);
-               //         exit(EXIT_FAILURE);
-               //     }
-               //     break;
                 case 'a':   /* Dirección remota */
                     if (++i < args.argc) {
                         strcpy(args.remote_address, args.argv[i]); /* Copia la ip*/
@@ -212,10 +148,7 @@ static void process_args(struct arguments args) {
                         exit(EXIT_FAILURE);
                     }
                     break;
-               // case 'n':   /* No-log */
-               //     *args.logfile = NULL;
-               //     break;
-               // case 'h':   /* Ayuda */
+                case 'h':   /* Ayuda */
                     print_help(args.argv[0]);
                     exit(EXIT_SUCCESS);
                 default:

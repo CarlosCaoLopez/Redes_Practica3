@@ -71,29 +71,6 @@ Receiver create_receiver(int domain, int type, int protocol, uint16_t receiver_p
 
 
 
-/**
- * @brief   Conecta el receivere con el servidor.
- *
- * Crea una conexión con el servidor especificado durante la creación del receivere
- * a través de su socket.
- *
- * @param receiver    Receivere a conectar.
- */
-
-/*void connect_to_sender(Receiver receiver) {
-    if (connect(receiver.socket, (struct sockaddr *) &(receiver.sender_address), sizeof(struct sockaddr_in)) < 0) fail("No se pudo conetar con el servidor");
-
-    printf("Conectado con éxito al servidor %s por el puerto %d\n", receiver.sender_ip, receiver.sender_port);
-
-    return;
-}*/
-
-/**
- * @brief   Envia mensaje al servidor
- * 
- */ 
-
-
 
 /**
  * @brief   Cierra el receivere.

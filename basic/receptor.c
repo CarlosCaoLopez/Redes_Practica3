@@ -17,7 +17,7 @@
  * Estructura de datos para pasar a la función process_args.
  * Debe contener siempre los campos int argc, char** argv, provenientes de main,
  * y luego una cantidad variable de punteros a las variables que se quieran inicializar
- * a partir de la entrada del programa.
+ * a partir de la entrada del programa, a saber el puerto del receptor.
  */
 struct arguments {
     int argc;
@@ -49,7 +49,7 @@ static void print_help(char* exe_name);
  *
  * Recibe mensajes del emisor hasta que este corta la conexión.
  *
- * @param receiver    Receivere que recibe los datos, previamente conectado al emisor.
+ * @param receiver    Receiver que recibe los datos, previamente conectado al emisor.
  */
 void handle_data(Receiver receiver);
 
@@ -69,8 +69,6 @@ int main(int argc, char** argv){
     process_args(args);
 
 	receiver = create_receiver(AF_INET, SOCK_DGRAM, 0, receiver_port);
-
-    //connect_to_sender(receiver); 
     
 	handle_data(receiver);
 	
@@ -85,7 +83,9 @@ void handle_data(Receiver receiver){
     socklen_t address_size = sizeof(struct sockaddr_in); 
     char message[MAX_BYTES_RECV];
 
+    /* Ejecutamos el recvfrom, es bloqueante */
     if ((recv_bytes = recvfrom(receiver.socket, message, MAX_BYTES_RECV, 0, (struct sockaddr *) &(receiver.sender_address), &address_size)) < 0) fail("No se pudo enviar el mensaje");
+    
     /* Guardamos la ip del emisor en formato textual*/
     inet_ntop(receiver.domain, &receiver.sender_address.sin_addr, receiver.sender_ip, INET_ADDRSTRLEN);
     printf("Mensaje recibido de %ld bytes con éxito al emisor %s por el puerto %d\n", recv_bytes, receiver.sender_ip, receiver.receiver_port);
@@ -120,23 +120,10 @@ static void process_args(struct arguments args) {
         if (current_arg[0] == '-') { /* Flag de opción */
             /* Manejar las opciones largas */
             if (current_arg[1] == '-') { /* Opción larga */
-               // if (!strcmp(current_arg, "--IP") || !strcmp(current_arg, "--ip")) current_arg = "-i";
                 if (!strcmp(current_arg, "--port")) current_arg = "-p";
                 else if (!strcmp(current_arg, "--help")) current_arg = "-h";
             } 
             switch(current_arg[1]) {
-              //  case 'I':   /* IP */
-              //  case 'i':
-              //      if (++i < args.argc) {
-              //          if (!strcmp(args.argv[i], "localhost")) args.argv[i] = "127.0.0.1"; /* Permitir al receivere indicar localhost como IP */
-              //          strncpy(args.sender_ip, args.argv[i], INET_ADDRSTRLEN);
-              //          set_ip = 1;
-              //      } else {
-              //          fprintf(stderr, "IP no especificada tras la opción '-i'\n\n");
-              //          print_help(args.argv[0]);
-              //          exit(EXIT_FAILURE);
-              //      }
-              //      break;
                   case 'p':   /* Puerto */
                     if (++i < args.argc) {
                         *args.receiver_port = atoi(args.argv[i]);
@@ -159,11 +146,6 @@ static void process_args(struct arguments args) {
                     print_help(args.argv[0]);
                     exit(EXIT_FAILURE);
             }
-
-     //   } else if (i == 1) {    /* Se especificó la IP como primer argumento */
-     //       if (!strcmp(args.argv[i], "localhost")) args.argv[i] = "127.0.0.1"; /* Permitir al receivere indicar localhost como IP */
-     //       strncpy(args.sender_ip, args.argv[i], INET_ADDRSTRLEN);
-     //       set_ip = 1;
         } else if (i == 1) {    /* Se especificó el puerto como primer argumento */
             *args.receiver_port = atoi(args.argv[i]);
             if (*args.receiver_port < 0) {
