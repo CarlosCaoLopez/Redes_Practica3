@@ -71,7 +71,7 @@ static void signal_handler(int signum) {
  *          y aceptar conexiones entrantes desde cualquier IP y del dominio y por puerto 
  *          especificados.
  */
-Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port,char* remote_address, int backlog) {
+Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port, char* remote_address, int backlog) {
     Sender sender;
     char buffer[BUFFER_LEN] = {0};
 
@@ -82,16 +82,20 @@ Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint
         .type = type,
         .protocol = protocol,
         .own_port = own_port,
+        .remote_port = remote_port,
         .backlog = backlog,
         .own_address.sin_family = domain,
         .own_address.sin_port = htons(own_port),
         .own_address.sin_addr.s_addr = htonl(INADDR_ANY),
         .remote_address.sin_family = domain,
         .remote_address.sin_port = htons(remote_port),
+        
+           
  };
 
     inet_pton(domain, remote_address, &sender.remote_address.sin_addr); /* Inicializamos la direccion remota */ 
-
+    sender.remote_ip = (char *) calloc(strlen(remote_address) + 1, sizeof(char)); /* Reservamos memoria para guardar en formato trxtual la ip a la que vaos a enviar el mensaje */ 
+    strcpy(sender.remote_ip, remote_address);
     /* Abrimos el log para escritura.
      * Si no se puede abrir, avisamos y seguimos, ya que no es un error crítico. */
 /*    if (logfile) {
@@ -159,7 +163,7 @@ Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint
 */
 
     printf("Emisor creado con éxito y listo para recibir/enviar.\n"
-            "Hostname: %s; IP: %s; Puerto: %d\n\n", sender.hostname, sender.ip, sender.own_port);
+            "Hostname: %s; IP: %s; Puerto: %d; IP receptor: %s; Puerto receptor: %d\n\n", sender.hostname, sender.ip, sender.own_port, sender.remote_ip, sender.remote_port);
 
     return sender;
 }
@@ -241,6 +245,7 @@ void close_sender(Sender* sender) {
 
     if (sender->hostname) free(sender->hostname);
     if (sender->ip) free(sender->ip);
+    if (sender->remote_ip) free(sender->remote_ip);
 
     /* Limpiar la estructura poniendo todos los campos a 0 */
     memset(sender, 0, sizeof(Sender));

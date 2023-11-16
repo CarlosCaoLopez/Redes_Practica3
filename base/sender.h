@@ -21,6 +21,7 @@ typedef struct {
     int backlog;    /* Longitud máxima de la cola de conexiones pendientes (para sockets pasivos) */
     char* hostname; /* Nombre del equipo en el que está ejecutándose el servidor */
     char* ip;       /* IP externa del servidor (en formato textual) */
+    char* remote_ip; /* IP del receptor en formato textual */
     struct sockaddr_in own_address;  /* Estructura con el dominio de comunicación, IPs a las que atender*/
 
     struct sockaddr_in remote_address;  /* Estructura con el dominio de comunicación, IPs a las que atender*/

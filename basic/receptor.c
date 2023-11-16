@@ -20,8 +20,8 @@
 struct arguments {
     int argc;
     char** argv;
-    char* server_ip;
-    uint16_t* server_port;
+    char* sender_ip;
+    uint16_t* sender_port;
 };
 
 /**
@@ -44,11 +44,11 @@ static void print_help(char* exe_name);
 
 
 /**
- * @brief   Maneja los datos que envía el servidor.
+ * @brief   Maneja los datos que envía el emisor.
  *
- * Recibe mensajes del servidor hasta que este corta la conexión.
+ * Recibe mensajes del emisor hasta que este corta la conexión.
  *
- * @param receiver    Receivere que recibe los datos, previamente conectado al servidor.
+ * @param receiver    Receivere que recibe los datos, previamente conectado al emisor.
  */
 void handle_data(Receiver receiver);
 
@@ -71,21 +71,23 @@ int main(int argc, char** argv){
 
 	receiver = create_receiver(AF_INET, SOCK_STREAM, 0, sender_ip, sender_port);
 
-	connect_to_server(receiver); 
-
+    //connect_to_sender(receiver); 
+    
 	handle_data(receiver);
 	
 	close_receiver(&receiver);
-
+    printf("Saliendo\n");
     exit(EXIT_SUCCESS);
 }
 
 
 void handle_data(Receiver receiver){
-    ssize_t recv_bytes
-    if ((recv_bytes = recvfrom(receiver.socket, message, sizeof(message), 0, (struct sockaddr *) &(receiver.sender_address), sizeof(struct sockaddr_in))) < 0) fail("No se pudo enviar el mensaje");
-    printf("Mensaje recibido de %d bytes con éxito al servidor %s por el puerto %d\n", recv_bytes,receiver.sender_ip, receiver.sender_port);
-    printf("Mensaje enviado al servidor: %s\n (Size: %d)", message);
+    ssize_t recv_bytes;
+    socklen_t address_size = sizeof(struct sockaddr_in); 
+    char message[MAX_BYTES_RECV];
+
+    if ((recv_bytes = recvfrom(receiver.socket, message, MAX_BYTES_RECV, 0, (struct sockaddr *) &(receiver.sender_address), &address_size)) < 0) fail("No se pudo enviar el mensaje");
+    printf("Mensaje recibido de %ld bytes con éxito al emisor %s por el puerto %d\n", recv_bytes,receiver.sender_ip, receiver.sender_port);
     return;
 }
 
@@ -95,12 +97,12 @@ static void print_help(char* exe_name){
 
     /** Lista de opciones de uso **/
     printf(" Opción\t\tOpción larga\t\tSignificado\n");
-    printf(" -i/-I <IP>\t--ip/--IP <IP>\t\tIP del servidor al que conectarse, o \"localhost\" si el servidor se ejecuta en el mismo host que el receivere.\n");
-    printf(" -p <port>\t--port <port>\t\tPuerto en el que escucha el servidor al que conectarse.\n");
+    printf(" -i/-I <IP>\t--ip/--IP <IP>\t\tIP del emisor al que conectarse, o \"localhost\" si el emisor se ejecuta en el mismo host que el receivere.\n");
+    printf(" -p <port>\t--port <port>\t\tPuerto en el que escucha el emisor al que conectarse.\n");
     printf(" -h\t\t--help\t\t\tMostrar este texto de ayuda y salir.\n");
 
     /** Consideraciones adicionales **/
-    printf("\nPueden especificarse los parámetros <IP> y <port> para la IP y puerto en los que escucha el servidor sin escribir las opciones '-I' ni '-p', siempre y cuando estos sean el primer y segundo parámetros que se pasan a la función, respectivamente.\n");
+    printf("\nPueden especificarse los parámetros <IP> y <port> para la IP y puerto en los que escucha el emisor sin escribir las opciones '-I' ni '-p', siempre y cuando estos sean el primer y segundo parámetros que se pasan a la función, respectivamente.\n");
     printf("\nSi se especifica varias veces un argumento, el comportamiento está indefinido.\n");
 }
 
@@ -114,27 +116,27 @@ static void process_args(struct arguments args) {
         if (current_arg[0] == '-') { /* Flag de opción */
             /* Manejar las opciones largas */
             if (current_arg[1] == '-') { /* Opción larga */
-                if (!strcmp(current_arg, "--IP") || !strcmp(current_arg, "--ip")) current_arg = "-i";
+               // if (!strcmp(current_arg, "--IP") || !strcmp(current_arg, "--ip")) current_arg = "-i";
                 else if (!strcmp(current_arg, "--port")) current_arg = "-p";
                 else if (!strcmp(current_arg, "--help")) current_arg = "-h";
             } 
             switch(current_arg[1]) {
-                case 'I':   /* IP */
-                case 'i':
+              //  case 'I':   /* IP */
+              //  case 'i':
+              //      if (++i < args.argc) {
+              //          if (!strcmp(args.argv[i], "localhost")) args.argv[i] = "127.0.0.1"; /* Permitir al receivere indicar localhost como IP */
+              //          strncpy(args.sender_ip, args.argv[i], INET_ADDRSTRLEN);
+              //          set_ip = 1;
+              //      } else {
+              //          fprintf(stderr, "IP no especificada tras la opción '-i'\n\n");
+              //          print_help(args.argv[0]);
+              //          exit(EXIT_FAILURE);
+              //      }
+              //      break;
+                  case 'p':   /* Puerto */
                     if (++i < args.argc) {
-                        if (!strcmp(args.argv[i], "localhost")) args.argv[i] = "127.0.0.1"; /* Permitir al receivere indicar localhost como IP */
-                        strncpy(args.server_ip, args.argv[i], INET_ADDRSTRLEN);
-                        set_ip = 1;
-                    } else {
-                        fprintf(stderr, "IP no especificada tras la opción '-i'\n\n");
-                        print_help(args.argv[0]);
-                        exit(EXIT_FAILURE);
-                    }
-                    break;
-                case 'p':   /* Puerto */
-                    if (++i < args.argc) {
-                        *args.server_port = atoi(args.argv[i]);
-                        if (*args.server_port < 0) {
+                        *args.sender_port = atoi(args.argv[i]); /* Aqui necesito el puerto del programa que recibe!*/
+                        if (*args.sender_port < 0) {
                             fprintf(stderr, "El valor de puerto especificado (%s) no es válido.\n\n", args.argv[i]);
                             print_help(args.argv[0]);
                             exit(EXIT_FAILURE);
@@ -156,11 +158,11 @@ static void process_args(struct arguments args) {
             }
         } else if (i == 1) {    /* Se especificó la IP como primer argumento */
             if (!strcmp(args.argv[i], "localhost")) args.argv[i] = "127.0.0.1"; /* Permitir al receivere indicar localhost como IP */
-            strncpy(args.server_ip, args.argv[i], INET_ADDRSTRLEN);
+            strncpy(args.sender_ip, args.argv[i], INET_ADDRSTRLEN);
             set_ip = 1;
         } else if (i == 2) {    /* Se especificó el puerto como segundo argumento */
-            *args.server_port = atoi(args.argv[i]);
-            if (*args.server_port < 0) {
+            *args.sender_port = atoi(args.argv[i]);
+            if (*args.sender_port < 0) {
                 fprintf(stderr, "El valor de puerto especificado (%s) no es válido.\n\n", args.argv[i]);
                 print_help(args.argv[0]);
                 exit(EXIT_FAILURE);
@@ -170,8 +172,8 @@ static void process_args(struct arguments args) {
     }
 
     if (!set_ip || !set_port) {
-        fprintf(stderr, "%s%s\n",   (set_ip ? "" : "No se especificó la IP del servidor al que conectarse.\n"), 
-                                    (set_port ? "" : "No se especificó el puerto del servidor al que conectarse.\n"));
+        fprintf(stderr, "%s%s\n",   (set_ip ? "" : "No se especificó la IP del emisor al que conectarse.\n"), 
+                                    (set_port ? "" : "No se especificó el puerto del emisor al que conectarse.\n"));
         print_help(args.argv[0]);
         exit(EXIT_FAILURE);
     }

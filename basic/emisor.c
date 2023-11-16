@@ -56,17 +56,18 @@ static void print_help(char* exe_name);
  * @param sender    Servidor que maneja la conexión.
  * @param receiver    Receivere conectado que solicita el servicio.
  */
-void handle_connection(Sender sender, Receiver receiver);
+void handle_data(Sender sender);
 
 
 
 int main(int argc, char** argv) {
     Sender sender;
-    Receiver receiver;
+   // Receiver receiver;
     uint16_t own_port;
     uint16_t remote_port;
     int backlog;
     char remote_address[INET_ADDRSTRLEN];
+
 
     struct arguments args = {
         .argc = argc,
@@ -81,40 +82,41 @@ int main(int argc, char** argv) {
 
     process_args(args);
 
-    
-
+    printf("Puerto remoto y direc antes crear sender: %u; %s\n", remote_port, remote_address);
     printf("Ejecutando emisor con parámetros: PORT=%u, BACKLOG=%d.\n\n", own_port, backlog);
-    sender = create_sender(AF_INET, SOCK_STREAM, 0, own_port, remote_port, remote_address, backlog); /*Pasamos los argumentos a la funcion de crear el sender*/
+    sender = create_sender(AF_INET, SOCK_DGRAM, 0, own_port, remote_port, remote_address, backlog); /*Pasamos los argumentos a la funcion de crear el sender*/
 
-    while (!terminate) {
-        if (!socket_io_pending) pause();    /* Pausamos la ejecución hasta que se reciba una señal de I/O o de terminación */
-       // listen_for_connection(sender, &receiver);
-        if (receiver.socket == -1) continue;  /* Falsa alarma, no había conexiones pendientes o se recibió una señal de terminación */
 
-        handle_connection(sender, receiver);
+    handle_data(sender);
 
-        printf("\nCerrando la conexión del receivere %s:%u.\n\n", receiver.ip, receiver.port);
-        close_receiver(&receiver);  /* Ya hemos gestionado al receivere, podemos olvidarnos de él */
-    }
-
-    printf("\nCerrando el servidor y saliendo...\n");
+//    while (!terminate) {
+//        if (!socket_io_pending) pause();    /* Pausamos la ejecución hasta que se reciba una señal de I/O o de terminación */
+//       // listen_for_connection(sender, &receiver);
+//        if (receiver.socket == -1) continue;  /* Falsa alarma, no había conexiones pendientes o se recibió una señal de terminación */
+//
+//        handle_connection(sender, receiver);
+//
+//        printf("\nCerrando la conexión del receivere %s:%u.\n\n", receiver.ip, receiver.port);
+//        close_receiver(&receiver);  /* Ya hemos gestionado al receivere, podemos olvidarnos de él */
+//    }
+//
+    printf("\nCerrando el emisor y saliendo...\n");
     close_sender(&sender);
-
     exit(EXIT_SUCCESS);
 }
 
 
-void handle_connection(Sender sender, Receiver receiver) {
+void handle_data(Sender sender) {
     char message[MESSAGE_SIZE] = {0};
     ssize_t sent_bytes;
     socklen_t length = sizeof(struct sockaddr_in);
     
-    printf("\nManejando la conexión del receiver %s:%u...\n", receiver.ip, receiver.port);
+    printf("\nEnviando mensaje al receptor %s:%u...\n", sender.remote_ip, sender.remote_port);
 
     snprintf(message, MESSAGE_SIZE, "Mensaje enviado desde %s en %s:%u. Hola Mundo!\n", sender.hostname, sender.ip, sender.own_port);
 
     /* Enviar el mensaje al receiver */
-    if ( (sent_bytes = sendto(receiver.socket, message, strlen(message) + 1, 0, (struct sockaddr_in*) &sender.remote_address, length)) < 0) fail("No se pudo enviar el mensaje");
+    if ( (sent_bytes = sendto(sender.socket, message, strlen(message) + 1, 0, (struct sockaddr *) &sender.remote_address, length)) < 0) fail("No se pudo enviar el mensaje");
 }
 
 
@@ -186,6 +188,7 @@ static void process_args(struct arguments args) {
                         print_help(args.argv[0]);
                         exit(EXIT_FAILURE);
                     }
+                    break;
                 case 'b':   /* Backlog */
                     if (++i < args.argc) {
                         *args.backlog = atoi(args.argv[i]);

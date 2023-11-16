@@ -24,14 +24,14 @@
  * @param protocol      Protocolo particular a usar en el socket. Normalmente solo existe
  *                      un protocolo para la combinación dominio-tipo dada, en cuyo caso se
  *                      puede especificar con un 0.
- * @param server_ip     Dirección IP del servidor al que conectarse (en formato textual).
- * @param server_port   Número de puerto en el que escucha el servidor (en orden de host).
+ * @param sender_ip     Dirección IP del servidor al que conectarse (en formato textual).
+ * @param sender_port   Número de puerto en el que escucha el servidor (en orden de host).
  *
  * @return  Receivere que guarda toda la información relevante sobre sí mismo con la que
  *          fue creado, y con un socket abierto en el cual está listo para conectarse 
  *          al servidor con la IP y puerto especificados.
  */
-Receiver create_receiver(int domain, int type, int protocol, char* server_ip, uint16_t server_port) {
+Receiver create_receiver(int domain, int type, int protocol, char* sender_ip, uint16_t sender_port) {
     Receiver receiver;
     char buffer[BUFFER_LEN] = {0};
 
@@ -41,19 +41,18 @@ Receiver create_receiver(int domain, int type, int protocol, char* server_ip, ui
         .domain = domain,
         .type = type,
         .protocol = protocol,
-        .server_port = server_port,
-        .server_address.sin_family = domain,
-        .server_address.sin_port = htons(server_port),
+        .sender_port = sender_port,
+        .sender_address.sin_family = domain,
+        .sender_address.sin_port = htons(sender_port),
     };
-
-    if (inet_pton(receiver.domain, server_ip, &(client.server_address.sin_addr)) != 1) {  /* La string no se pudo traducir a una IP válida */
+    if (inet_pton(receiver.domain, sender_ip, &(receiver.sender_address.sin_addr)) != 1) {  /* La string no se pudo traducir a una IP válida */
         fprintf(stderr, "La IP especificada no es válida\n\n");
         exit(EXIT_FAILURE);
     }
 
     /* Guardar la IP del servidor en formato textual */
-    receiver.server_ip = (char *) calloc(strlen(server_ip) + 1, sizeof(char));
-    strcpy(receiver.server_ip, server_ip);
+    receiver.sender_ip = (char *) calloc(strlen(sender_ip) + 1, sizeof(char));
+    strcpy(receiver.sender_ip, sender_ip);
 
     /* Crear el socket del receivere */
     if ( (receiver.socket = socket(domain, type, protocol)) < 0) fail("No se pudo crear el socket");
@@ -72,10 +71,10 @@ Receiver create_receiver(int domain, int type, int protocol, char* server_ip, ui
  * @param receiver    Receivere a conectar.
  */
 
-/*void connect_to_server(Receiver receiver) {
-    if (connect(receiver.socket, (struct sockaddr *) &(client.server_address), sizeof(struct sockaddr_in)) < 0) fail("No se pudo conetar con el servidor");
+/*void connect_to_sender(Receiver receiver) {
+    if (connect(receiver.socket, (struct sockaddr *) &(receiver.sender_address), sizeof(struct sockaddr_in)) < 0) fail("No se pudo conetar con el servidor");
 
-    printf("Conectado con éxito al servidor %s por el puerto %d\n", receiver.server_ip, client.server_port);
+    printf("Conectado con éxito al servidor %s por el puerto %d\n", receiver.sender_ip, receiver.sender_port);
 
     return;
 }*/
@@ -96,15 +95,15 @@ Receiver create_receiver(int domain, int type, int protocol, char* server_ip, ui
  * @param receiver    Receivere a cerrar.
  */
 
-void close_receiver(Receiver* client) {
+void close_receiver(Receiver* receiver) {
     /* Cerrar el socket del receivere */
     if (receiver->socket != -1) {
-        if (close(receiver->socket)) fail("No se pudo cerrar el socket del cliente");
+        if (close(receiver->socket)) fail("No se pudo cerrar el socket del receivere");
     }
 
-    //if (receiver->hostname) free(client->hostname);
-    if (receiver->ip) free(client->ip);
-    if (receiver->server_ip) free(client->server_ip);
+    //if (receiver->hostname) free(receiver->hostname);
+    if (receiver->ip) free(receiver->ip);
+    if (receiver->sender_ip) free(receiver->sender_ip);
 
     /* Limpiar la estructura poniendo todos los campos a 0 */
     memset(receiver, 0, sizeof(Receiver));
