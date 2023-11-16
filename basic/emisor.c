@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 
     process_args(args);
 
-    printf("Puerto remoto y direc antes crear sender: %u; %s\n", remote_port, remote_address);
+   
     printf("Ejecutando emisor con parámetro: PORT=%u.\n\n", own_port);
     sender = create_sender(AF_INET, SOCK_DGRAM, 0, own_port, remote_port, remote_address); /*Pasamos los argumentos a la funcion de crear el sender*/
 

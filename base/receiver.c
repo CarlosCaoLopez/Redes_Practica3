@@ -10,7 +10,7 @@
 #include "receiver.h"
 #include "loging.h"
 
-#define BUFFER_LEN 64
+//#define BUFFER_LEN 64
 
 
 /**

@@ -4,7 +4,8 @@
 
 # Compilador y opciones de compilación
 CC = gcc
-CFLAGS = -Wall -Wpedantic -g
+
+CFLAGS = -Wall -Wpedantic -Wno-missing-braces -g
 
 # Carpeta con las cabeceras
 HEADERS_DIR = base
