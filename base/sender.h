@@ -18,7 +18,7 @@ typedef struct {
     uint16_t own_port;  /* Puerto en el que el servidor escucha peticiones (en orden de host) */
 
     uint16_t remote_port;  /* Puerto en el que el programa_2 recibirá datos (en orden de host) */
-    int backlog;    /* Longitud máxima de la cola de conexiones pendientes (para sockets pasivos) */
+//    int backlog;    /* Longitud máxima de la cola de conexiones pendientes (para sockets pasivos) */
     char* hostname; /* Nombre del equipo en el que está ejecutándose el servidor */
     char* ip;       /* IP externa del servidor (en formato textual) */
     char* remote_ip; /* IP del receptor en formato textual */
@@ -33,10 +33,10 @@ typedef struct {
 /** 
  * Variables globales para el manejo de señales.
  */
-extern uint8_t socket_io_pending;   /* Contiene el número de eventos de entrada/salida pendientes de manejar en el socket del servidor. 
-                                     * Su uso permite que el servidor no se quede bloqueado en el proceso de espera de señales, pero que aún así pueda pausarse
-                                     * para no gastar recursos de forma innecesaria */
-extern uint8_t terminate;           /* Vale 1 si llegó una señal de terminación (SIGINT o SIGTERM). En este caso se espera que el proceso termine limpiamente. */
+//extern uint8_t socket_io_pending;   /* Contiene el número de eventos de entrada/salida pendientes de manejar en el socket del servidor. 
+                                  //   * Su uso permite que el servidor no se quede bloqueado en el proceso de espera de señales, pero que aún así pueda pausarse
+                                  //   * para no gastar recursos de forma innecesaria */
+//extern uint8_t terminate;           /* Vale 1 si llegó una señal de terminación (SIGINT o SIGTERM). En este caso se espera que el proceso termine limpiamente. */
 
 
 /**
@@ -60,7 +60,7 @@ extern uint8_t terminate;           /* Vale 1 si llegó una señal de terminaci�
  *          y aceptar conexiones entrantes desde cualquier IP y del dominio y por puerto 
  *          especificados.
  */
-Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port,char* remote_address, int backlog);
+Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port,char* remote_address);
 
 
 /**

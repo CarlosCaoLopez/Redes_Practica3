@@ -18,8 +18,8 @@
 #define BUFFER_LEN 128
 
 /** Variables globales que exportar en el fichero de cabecera para el manejo de señales */
-uint8_t socket_io_pending;
-uint8_t terminate;
+//uint8_t socket_io_pending;
+//uint8_t terminate;
 
 
 /**
@@ -32,23 +32,23 @@ uint8_t terminate;
  *
  *  @param signum   Número de señal recibida.
  */
-static void signal_handler(int signum) {
-    switch (signum) {
-        case SIGIO:
-            socket_io_pending++;    /* Aumentar en 1 el número de eventos de entrada/salida pendientes */
-            break;
-        case SIGINT:
-        case SIGTERM:
-            terminate = 1;          /* Marca que el programa debe terminar */
-            break;
-	case SIGCHLD:
-	    while(wait(NULL) > 0);    
-        default:
-            break;
-    }
-
-}
-
+//static void signal_handler(int signum) {
+//    switch (signum) {
+//        case SIGIO:
+//            socket_io_pending++;    /* Aumentar en 1 el número de eventos de entrada/salida pendientes */
+//            break;
+//        case SIGINT:
+//        case SIGTERM:
+//            terminate = 1;          /* Marca que el programa debe terminar */
+//            break;
+//	case SIGCHLD:
+//	    while(wait(NULL) > 0);    
+//        default:
+//            break;
+//    }
+//
+//}
+//
 
 /**
  * @brief   Crea un emisor.
@@ -71,7 +71,7 @@ static void signal_handler(int signum) {
  *          y aceptar conexiones entrantes desde cualquier IP y del dominio y por puerto 
  *          especificados.
  */
-Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port, char* remote_address, int backlog) {
+Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port, char* remote_address) {
     Sender sender;
     char buffer[BUFFER_LEN] = {0};
 
@@ -83,7 +83,7 @@ Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint
         .protocol = protocol,
         .own_port = own_port,
         .remote_port = remote_port,
-        .backlog = backlog,
+       // .backlog = backlog,
         .own_address.sin_family = domain,
         .own_address.sin_port = htons(own_port),
         .own_address.sin_addr.s_addr = htonl(INADDR_ANY),

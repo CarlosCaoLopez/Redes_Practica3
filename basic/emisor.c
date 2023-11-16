@@ -11,7 +11,7 @@
 
 #define MESSAGE_SIZE 128
 #define DEFAULT_PORT 8000
-#define DEFAULT_BACKLOG 16
+//#define DEFAULT_BACKLOG 16
 #define DEFAULT_LOG "log"
 
 /**
@@ -25,7 +25,7 @@ struct arguments {
     char** argv;
     uint16_t* own_port;
     uint16_t* remote_port;
-    int* backlog;
+  //  int* backlog;
     char* remote_address;
 };
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
    // Receiver receiver;
     uint16_t own_port;
     uint16_t remote_port;
-    int backlog;
+   // int backlog;
     char remote_address[INET_ADDRSTRLEN];
 
 
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
         .argv = argv,
         .own_port = &own_port,
         .remote_port = &remote_port,
-        .backlog = &backlog,
+       // .backlog = &backlog,
         .remote_address = remote_address,
     };
 
@@ -83,8 +83,8 @@ int main(int argc, char** argv) {
     process_args(args);
 
     printf("Puerto remoto y direc antes crear sender: %u; %s\n", remote_port, remote_address);
-    printf("Ejecutando emisor con parámetros: PORT=%u, BACKLOG=%d.\n\n", own_port, backlog);
-    sender = create_sender(AF_INET, SOCK_DGRAM, 0, own_port, remote_port, remote_address, backlog); /*Pasamos los argumentos a la funcion de crear el sender*/
+    printf("Ejecutando emisor con parámetro: PORT=%u.\n\n", own_port);
+    sender = create_sender(AF_INET, SOCK_DGRAM, 0, own_port, remote_port, remote_address); /*Pasamos los argumentos a la funcion de crear el sender*/
 
 
     handle_data(sender);
@@ -134,7 +134,7 @@ static void print_help(char* exe_name){
 
     /** Consideraciones adicionales **/
     printf("\nPuede especificarse el parámetro <port> para el puerto en el que escucha el servidor sin escribir la opción '-p', siempre y cuando este sea el primer parámetro que se pasa a la función.\n");
-    printf("\nSi no se especifica alguno de los argumentos, el servidor se ejecutará con su valor por defecto, a saber: DEFAULT_PORT=%u; DEFAULT_BACKLOG=%d, DEFAULT_LOG=%s\n", DEFAULT_PORT, DEFAULT_BACKLOG, DEFAULT_LOG);
+ /*   printf("\nSi no se especifica alguno de los argumentos, el servidor se ejecutará con su valor por defecto, a saber: DEFAULT_PORT=%u; DEFAULT_BACKLOG=%d, DEFAULT_LOG=%s\n", DEFAULT_PORT, DEFAULT_BACKLOG, DEFAULT_LOG);*/
     printf("\nSi se especifica varias veces un argumento, o se especifican las opciones \"--log\" y \"--no-log\" a la vez, el comportamiento está indefinido.\n");
 }
 
@@ -145,7 +145,7 @@ static void process_args(struct arguments args) {
 
     /* Inicializar los valores de puerto y backlog a sus valores por defecto */
     *args.own_port = DEFAULT_PORT;
-    *args.backlog = DEFAULT_BACKLOG;
+   // *args.backlog = DEFAULT_BACKLOG;
    // *args.logfile = DEFAULT_LOG;
 
     for (i = 1; i < args.argc; i++) { /* Procesamos los argumentos (sin contar el nombre del ejecutable) */
@@ -155,7 +155,7 @@ static void process_args(struct arguments args) {
             if (current_arg[1] == '-') { /* Opción larga */
                 if (!strcmp(current_arg, "--own_port")) current_arg = "-p";
                 else if( (!strcmp(current_arg, "--remote_port"))) current_arg = "-r";
-                else if (!strcmp(current_arg, "--backlog")) current_arg = "-b";
+               // else if (!strcmp(current_arg, "--backlog")) current_arg = "-b";
                 else if (!strcmp(current_arg, "--address")) current_arg = "-a";
                // else if (!strcmp(current_arg, "--no-log")) current_arg = "-n";
                 else if (!strcmp(current_arg, "--help")) current_arg = "-h";
@@ -189,21 +189,21 @@ static void process_args(struct arguments args) {
                         exit(EXIT_FAILURE);
                     }
                     break;
-                case 'b':   /* Backlog */
-                    if (++i < args.argc) {
-                        *args.backlog = atoi(args.argv[i]);
-                        if (*args.backlog < 0) {
-                            fprintf(stderr, "El valor de backlog especificado (%s) no es válido.\n\n", args.argv[i]);
-                            print_help(args.argv[0]);
-                            exit(EXIT_FAILURE);
-                        }
-                    } else {
-                        fprintf(stderr, "Tamaño del backlog no especificado tras la opción '-b'.\n\n");
-                        print_help(args.argv[0]);
-                        exit(EXIT_FAILURE);
-                    }
-                    break;
-                 case 'a':   /* Dirección remota */
+               // case 'b':   /* Backlog */
+               //     if (++i < args.argc) {
+               //         *args.backlog = atoi(args.argv[i]);
+               //         if (*args.backlog < 0) {
+               //             fprintf(stderr, "El valor de backlog especificado (%s) no es válido.\n\n", args.argv[i]);
+               //             print_help(args.argv[0]);
+               //             exit(EXIT_FAILURE);
+               //         }
+               //     } else {
+               //         fprintf(stderr, "Tamaño del backlog no especificado tras la opción '-b'.\n\n");
+               //         print_help(args.argv[0]);
+               //         exit(EXIT_FAILURE);
+               //     }
+               //     break;
+                case 'a':   /* Dirección remota */
                     if (++i < args.argc) {
                         strcpy(args.remote_address, args.argv[i]); /* Copia la ip*/
                     } else {
