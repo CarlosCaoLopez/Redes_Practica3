@@ -9,7 +9,7 @@
 #include "sender.h"
 #include "loging.h"
 
-#define MESSAGE_SIZE 128
+#define MESSAGE_SIZE 256 
 #define DEFAULT_PORT 8000
 #define DEFAULT_LOG "log"
 
@@ -68,7 +68,8 @@ void handle_data(Sender sender) {
     
     printf("\nEnviando mensaje al receptor %s:%u...\n", sender.remote_ip, sender.remote_port);
 
-    snprintf(message, MESSAGE_SIZE, "Mensaje enviado desde %s en %s:%u. Hola Mundo!\n", sender.hostname, sender.ip, sender.own_port);
+    snprintf(message, MESSAGE_SIZE, "Mensaje enviado desde %s en %s:%u. Hola Mundo! Este mensaje tiene mas de 128 bytes. Este mensaje tiene mas de 128 bytes. Este mensaje tiene mas de 128 bytes\n", sender.hostname, sender.ip, sender.own_port);
+    printf("Tamaño del mensaje: %ld\n", strlen(message)+1);
 
     if ( (sent_bytes = sendto(sender.socket, message, strlen(message) + 1, 0, (struct sockaddr *) &sender.remote_address, length)) < 0) fail("No se pudo enviar el mensaje");
 }

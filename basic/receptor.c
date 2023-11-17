@@ -85,9 +85,11 @@ void handle_data(Receiver receiver){
 
     /* Ejecutamos el recvfrom, es bloqueante */
     if ((recv_bytes = recvfrom(receiver.socket, message, MAX_BYTES_RECV, 0, (struct sockaddr *) &(receiver.sender_address), &address_size)) < 0) fail("No se pudo enviar el mensaje");
+    if ((recv_bytes = recvfrom(receiver.socket, message, MAX_BYTES_RECV, 0, (struct sockaddr *) &(receiver.sender_address), &address_size)) < 0) fail("No se pudo enviar el mensaje");
     
     /* Guardamos la ip del emisor en formato textual*/
     inet_ntop(receiver.domain, &receiver.sender_address.sin_addr, receiver.sender_ip, INET_ADDRSTRLEN);
+    printf("Mensaje: %s\n",message);
     printf("Mensaje recibido de %ld bytes con éxito al emisor %s por el puerto %d\n", recv_bytes, receiver.sender_ip, receiver.receiver_port);
     return;
 }
