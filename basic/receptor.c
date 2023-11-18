@@ -10,7 +10,8 @@
 #include "receiver.h"
 #include "loging.h"
 
-#define MAX_BYTES_RECV 128
+//#define MAX_BYTES_RECV 128
+#define ARRAY_SIZE 12
 #define DEFAULT_PORT 8500
 
 /**
@@ -81,11 +82,17 @@ int main(int argc, char** argv){
 void handle_data(Receiver receiver){
     ssize_t recv_bytes;
     socklen_t address_size = sizeof(struct sockaddr_in); 
-    char message[MAX_BYTES_RECV];
+    float array[ARRAY_SIZE];
 
     /* Ejecutamos el recvfrom, es bloqueante */
-    if ((recv_bytes = recvfrom(receiver.socket, message, MAX_BYTES_RECV, 0, (struct sockaddr *) &(receiver.sender_address), &address_size)) < 0) fail("No se pudo enviar el mensaje");
+    if ((recv_bytes = recvfrom(receiver.socket, array, ARRAY_SIZE*4, 0, (struct sockaddr *) &(receiver.sender_address), &address_size)) < 0) fail("No se pudo enviar el mensaje");
     
+    printf("Mensaje enviado: {");
+    for(int i = 0 ; i<(recv_bytes); i++){
+        printf("%f ", array[i]);
+    }
+    printf("}\n");
+
     /* Guardamos la ip del emisor en formato textual*/
     inet_ntop(receiver.domain, &receiver.sender_address.sin_addr, receiver.sender_ip, INET_ADDRSTRLEN);
     printf("Mensaje recibido de %ld bytes con éxito al emisor %s por el puerto %d\n", recv_bytes, receiver.sender_ip, receiver.receiver_port);

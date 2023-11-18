@@ -9,7 +9,8 @@
 #include "sender.h"
 #include "loging.h"
 
-#define MESSAGE_SIZE 128
+//#define MESSAGE_SIZE 128
+#define ARRAY_SIZE 12
 #define DEFAULT_PORT 8000
 #define DEFAULT_LOG "log"
 
@@ -62,15 +63,13 @@ int main(int argc, char** argv) {
 
 
 void handle_data(Sender sender) {
-    char message[MESSAGE_SIZE] = {0};
+    float array[ARRAY_SIZE] = {0.0,1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,10.10,11.11};
     ssize_t sent_bytes;
     socklen_t length = sizeof(struct sockaddr_in);
     
     printf("\nEnviando mensaje al receptor %s:%u...\n", sender.remote_ip, sender.remote_port);
 
-    snprintf(message, MESSAGE_SIZE, "Mensaje enviado desde %s en %s:%u. Hola Mundo!\n", sender.hostname, sender.ip, sender.own_port);
-
-    if ( (sent_bytes = sendto(sender.socket, message, strlen(message) + 1, 0, (struct sockaddr *) &sender.remote_address, length)) < 0) fail("No se pudo enviar el mensaje");
+    if ( (sent_bytes = sendto(sender.socket, array, ARRAY_SIZE*4, 0, (struct sockaddr *) &sender.remote_address, length)) < 0) fail("No se pudo enviar el mensaje");
 }
 
 
