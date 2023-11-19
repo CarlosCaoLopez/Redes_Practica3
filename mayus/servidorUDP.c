@@ -6,11 +6,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <wctype.h>
+
 
 #include "receiver.h"
 #include "loging.h"
 
-#define MAX_BYTES_RECV 128
+#define MAX_BYTES_RECV 2056
 #define DEFAULT_PORT 8500
 
 /**
@@ -53,6 +55,20 @@ static void print_help(char* exe_name);
  */
 void handle_data(Receiver receiver);
 
+/**
+ * @brief   Transforma una string a mayúsculas
+ *
+ * Transforma la string source a mayúsculas, utilizando para ello wstrings para poder transformar
+ * caracteres especiales que ocupen más de un byte. Por tanto, permite pasar a mayúsculas strings en
+ * el idioma definido en locale.
+ *
+ * @param source    String fuente a transformar en mayúsculas.
+ *
+ * @return  String dinámicamente alojada (por tanto, debe liberarse con un free) que contiene los mismos
+ *          caractereres que source pero en mayúsculas.
+ */
+static char* toupper_string(const char* source);
+
 
 
 int main(int argc, char** argv){
@@ -79,17 +95,79 @@ int main(int argc, char** argv){
 
 
 void handle_data(Receiver receiver){
-    ssize_t recv_bytes;
-    socklen_t address_size = sizeof(struct sockaddr_in); 
-    char message[MAX_BYTES_RECV];
+    char* output;
+    char input[MAX_BYTES_RECV];
+    ssize_t recv_bytes, sent_bytes;
+    int flag=0;
+    socklen_t address_size = sizeof(struct sockaddr_in);
 
-    /* Ejecutamos el recvfrom, es bloqueante */
-    if ((recv_bytes = recvfrom(receiver.socket, message, MAX_BYTES_RECV, 0, (struct sockaddr *) &(receiver.sender_address), &address_size)) < 0) fail("No se pudo recibir el mensaje");
     
-    /* Guardamos la ip del emisor en formato textual*/
-    inet_ntop(receiver.domain, &receiver.sender_address.sin_addr, receiver.sender_ip, INET_ADDRSTRLEN);
-    printf("Mensaje recibido de %ld bytes con éxito al emisor %s por el puerto %d\n", recv_bytes, receiver.sender_ip, receiver.receiver_port);
-    return;
+    
+
+    while (1) {
+        if ( (recv_bytes = recvfrom(receiver.socket, input, MAX_BYTES_RECV, 0, (struct sockaddr *) &(receiver.sender_address), &address_size)) < 0) fail("Error al recibir la línea de texto");
+        if (!recv_bytes) return;    /* Se recibió una orden de cerrar la conexión */
+        printf("Linea recibida:\t%s\n", input);
+        /* Guardamos la ip del clienteUDP en formato textual*/
+        inet_ntop(receiver.domain, &receiver.sender_address.sin_addr, receiver.sender_ip, INET_ADDRSTRLEN);
+        
+        if(flag == 0){
+            printf("\nManejando al cliente %s:%u...\n", receiver.sender_ip, ntohs(receiver.sender_address.sin_port));
+            flag=1;
+        }
+
+        output = toupper_string(input); 
+        printf("Linea a ser enviada:\t %s \n", output);
+        if ( (sent_bytes = sendto(receiver.socket, output, strlen(output) + 1, 0, (struct sockaddr *) &receiver.sender_address, address_size)) < 0) {
+            
+            fail("Error al enviar la línea de texto al cliente");
+
+        }
+
+        if (output) free(output);
+    }
+}
+
+/**
+ * @brief   Transforma una string a mayúsculas
+ *
+ * Transforma la string source a mayúsculas, utilizando para ello wstrings para poder transformar
+ * caracteres especiales que ocupen más de un byte. Por tanto, permite pasar a mayúsculas strings en
+ * el idioma definido en locale.
+ *
+ * @param source    String fuente a transformar en mayúsculas.
+ *
+ * @return  String dinámicamente alojada (por tanto, debe liberarse con un free) que contiene los mismos
+ *          caractereres que source pero en mayúsculas.
+ */
+static char* toupper_string(const char* source) {
+    wchar_t* wide_source;
+    wchar_t* wide_destiny;
+    ssize_t wide_size, size;
+    char* destiny;
+    int i;
+
+    wide_size = mbstowcs(NULL, source, 0); /* Calcular el número de wchar_t que ocupa el string source */
+    /* Alojar espacio para wide_source y wide_destiny */
+    wide_source = (wchar_t *) calloc(wide_size + 1, sizeof(wchar_t));
+    wide_destiny = (wchar_t *) calloc(wide_size + 1, sizeof(wchar_t));
+
+    /* Transformar la fuente en un wstring */
+    mbstowcs(wide_source, source, wide_size + 1);
+    /* Transformar wide_source a mayúsculas y guardarlo en wide_destiny */
+    for (i = 0; wide_source[i]; i++) {
+        wide_destiny[i] = towupper(wide_source[i]);
+    }
+
+    /* Transoformar de vuelta a un string normal */
+    size = wcstombs(NULL, wide_destiny, 0); /* Calcular el número de char que ocupa el wstring wide_destiny */
+    destiny = (char *) calloc(size + 1, sizeof(char));
+    wcstombs(destiny, wide_destiny, size + 1);
+
+    if (wide_source) free(wide_source);
+    if (wide_destiny) free(wide_destiny);
+
+    return destiny;
 }
 
 static void print_help(char* exe_name){

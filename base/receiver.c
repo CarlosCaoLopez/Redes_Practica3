@@ -10,6 +10,9 @@
 #include "receiver.h"
 #include "loging.h"
 
+
+#define MAX_BYTES_RECV 128
+
 //#define BUFFER_LEN 64
 
 
