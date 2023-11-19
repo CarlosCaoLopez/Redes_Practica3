@@ -26,8 +26,36 @@ typedef struct {
 } Sender;
 
 
-Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port,char* remote_address);
+/**
+ * @brief   Crea un sender.
+ *
+ * Crea un sender nuevo con un nuevo socket, y guarda en él la información necesaria
+ * sobre el receptor para posteriormente poder enviar información.
+ *
+ * @param domain        Dominio de comunicación. 
+ * @param type          Tipo de protocolo usado para el socket.
+ * @param protocol      Protocolo particular a usar en el socket. Normalmente solo existe
+ *                      un protocolo para la combinación dominio-tipo dada, en cuyo caso se
+ *                      puede especificar con un 0.
+ * @param own_port      Número de puerto por el que emite el sender (en orden de host).
+ * @param receiver_port   Número de puerto en el que escucha el receiver (en orden de host).
+ * @param remote_address   IP en formato textual del receptor.
+ *
+ * @return  Receivere que guarda toda la información relevante sobre sí mismo con la que
+ *          fue creado, y con un socket abierto
+ */
+ 
+Sender create_sender(int domain, int type, int protocol, uint16_t own_port, uint16_t remote_port, char* remote_address);
 
+/**
+ * @brief   Cierra el sender.
+ *
+ * Cierra el socket asociado al sender y libera toda la memoria
+ * reservada para el sender.
+ *
+ * @param sender    Sender a cerrar.
+ */
+ 
 void close_sender(Sender* sender); 
 
 

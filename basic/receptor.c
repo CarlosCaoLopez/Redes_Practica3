@@ -47,9 +47,9 @@ static void print_help(char* exe_name);
 /**
  * @brief   Maneja los datos que envía el emisor.
  *
- * Recibe mensajes del emisor hasta que este corta la conexión.
+ * Recibe el mensaje del emisor.
  *
- * @param receiver    Receiver que recibe los datos, previamente conectado al emisor.
+ * @param receiver    Receiver que recibe los datos.
  */
 void handle_data(Receiver receiver);
 
@@ -94,16 +94,14 @@ void handle_data(Receiver receiver){
 
 static void print_help(char* exe_name){
     /** Cabecera y modo de ejecución **/
-    printf("Uso: %s [-i] <IP> [-p] <port> [-h]\n\n", exe_name);
+    printf("Uso: %s [-p] <port> [-h]\n\n", exe_name);
 
     /** Lista de opciones de uso **/
     printf(" Opción\t\tOpción larga\t\tSignificado\n");
-    printf(" -i/-I <IP>\t--ip/--IP <IP>\t\tIP del emisor al que conectarse, o \"localhost\" si el emisor se ejecuta en el mismo host que el receivere.\n");
     printf(" -p <port>\t--port <port>\t\tPuerto en el que escucha el emisor al que conectarse.\n");
     printf(" -h\t\t--help\t\t\tMostrar este texto de ayuda y salir.\n");
 
     /** Consideraciones adicionales **/
-    printf("\nPueden especificarse los parámetros <IP> y <port> para la IP y puerto en los que escucha el emisor sin escribir las opciones '-I' ni '-p', siempre y cuando estos sean el primer y segundo parámetros que se pasan a la función, respectivamente.\n");
     printf("\nSi se especifica varias veces un argumento, el comportamiento está indefinido.\n");
 }
 

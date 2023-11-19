@@ -47,11 +47,11 @@ static void print_help(char* exe_name);
 
 
 /**
- * @brief   Maneja los datos que envía el emisor.
+ * @brief   Maneja los datos que envía el cliente.
  *
- * Recibe mensajes del emisor hasta que este corta la conexión.
+ * Recibe mensajes del cliente de forma indefinida. El bucle no termina por lo caul queda bloqueado.
  *
- * @param receiver    Receiver que recibe los datos, previamente conectado al emisor.
+ * @param receiver    Receiver que recibe los datos.
  */
 void handle_data(Receiver receiver);
 
@@ -113,7 +113,7 @@ void handle_data(Receiver receiver){
         
         if(flag == 0){
             printf("\nManejando al cliente %s:%u...\n", receiver.sender_ip, ntohs(receiver.sender_address.sin_port));
-            flag=1;
+            flag++;
         }
 
         output = toupper_string(input); 
@@ -128,18 +128,7 @@ void handle_data(Receiver receiver){
     }
 }
 
-/**
- * @brief   Transforma una string a mayúsculas
- *
- * Transforma la string source a mayúsculas, utilizando para ello wstrings para poder transformar
- * caracteres especiales que ocupen más de un byte. Por tanto, permite pasar a mayúsculas strings en
- * el idioma definido en locale.
- *
- * @param source    String fuente a transformar en mayúsculas.
- *
- * @return  String dinámicamente alojada (por tanto, debe liberarse con un free) que contiene los mismos
- *          caractereres que source pero en mayúsculas.
- */
+
 static char* toupper_string(const char* source) {
     wchar_t* wide_source;
     wchar_t* wide_destiny;
@@ -176,12 +165,10 @@ static void print_help(char* exe_name){
 
     /** Lista de opciones de uso **/
     printf(" Opción\t\tOpción larga\t\tSignificado\n");
-    printf(" -i/-I <IP>\t--ip/--IP <IP>\t\tIP del emisor al que conectarse, o \"localhost\" si el emisor se ejecuta en el mismo host que el receivere.\n");
     printf(" -p <port>\t--port <port>\t\tPuerto en el que escucha el emisor al que conectarse.\n");
     printf(" -h\t\t--help\t\t\tMostrar este texto de ayuda y salir.\n");
 
     /** Consideraciones adicionales **/
-    printf("\nPueden especificarse los parámetros <IP> y <port> para la IP y puerto en los que escucha el emisor sin escribir las opciones '-I' ni '-p', siempre y cuando estos sean el primer y segundo parámetros que se pasan a la función, respectivamente.\n");
     printf("\nSi se especifica varias veces un argumento, el comportamiento está indefinido.\n");
 }
 

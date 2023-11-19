@@ -15,6 +15,13 @@
 #define FILENAME_LEN 128
 #define MAX_BYTES_RECV 2056
 
+/**
+ * Estructura de datos para pasar a la función process_args.
+ * Debe contener siempre los campos int argc, char** argv, provenientes de main,
+ * y luego una cantidad variable de punteros a las variables que se quieran inicializar
+ * a partir de la entrada del programa, a saber el puerto del receptor.
+ */
+ 
 struct arguments {
     int argc;
     char** argv;
@@ -24,12 +31,36 @@ struct arguments {
     char* input_file_name;
 };
 
+/**
+ * @brief   Procesa los argumentos del main.
+ *
+ * Procesa los argumentos proporcionados al programa por línea de comandos,
+ * e inicializa las variables del programa necesarias acorde a estos.
+ *
+ * @param args  Estructura con los argumentos del programa y punteros a las
+ *              variables que necesitan inicialización.
+ */
 
 static void process_args(struct arguments args);
 
 
+/**
+ * @brief Imprime la ayuda del programa.
+ *
+ * @param exe_name  Nombre del ejecutable (argv[0]).
+ */
+
 static void print_help(char* exe_name);
 
+/**
+ * @brief   Envío de datos al servidor y escritura de string en fichero.
+ *
+ * Procesamiento del archivo de texto, envío de datos al servidor, recepción de datos del servidor y escritura del nuevo archivo.
+ *
+ * @param sender    Sender que envia los datos.
+ * @param input_file_name Nombre del archivo de datos a procesa.
+ */
+ 
 void handle_data(Sender sender, char* input_file_name);
 
 
@@ -95,9 +126,11 @@ void handle_data(Sender sender, char* input_file_name){
     buffer_size = MAX_BYTES_RECV;
     send_buffer = (char *) calloc(buffer_size, sizeof(char));
     while (!feof(fp_input)) {
+    
+        //sleep(7);/* Ejecutamos un sleep para que de tiempo a lanzar un nuevo cliente*/
+        
         /* Leemos hasta que lo que devuelve getline es EOF, cerramos la conexión en ese caso */
         if(getline(&send_buffer, &buffer_size, fp_input) == EOF){ /* Escaneamos la linea hasta el final del archivo */
-            //shutdown(client.socket, SHUT_RD);   /* Le decimos al servidor que pare de recibir */
             continue;
         }
         if ( (sent_bytes = sendto(sender.socket, send_buffer, strlen(send_buffer) + 1, 0, (struct sockaddr *) &sender.remote_address, address_size)) < 0) fail("No se pudo enviar el mensaje");
@@ -120,20 +153,18 @@ void handle_data(Sender sender, char* input_file_name){
 
 static void print_help(char* exe_name){
     /** Cabecera y modo de ejecución **/
-    printf("Uso: %s [[-p] <port>] [-b <backlog>] [-l <log> | --no-log] [-h]\n\n", exe_name);
+    printf("Uso: %s [[-p] <port>] [[-a] <address>] [-r <remote port>] [-f <file>] [-h]\n\n", exe_name);
 
     /** Lista de opciones de uso **/
     printf(" Opción\t\tOpción larga\t\tSignificado\n");
-    printf(" -p <port>\t--port <port>\t\tPuerto en el que escuchará el servidor.\n");
-    printf(" -b <backlog>\t--backlog <backlog>\tTamaño máximo de la cola de conexiones pendientes.\n");
-    printf(" -l <log>\t--log <log>\t\tNombre del archivo en el que guardar el registro de actividad del servidor.\n");
-    printf(" -n\t\t--no-log\t\tNo crear archivo de registro de actividad.\n");
+    printf(" -p <port>\t--own_port <port>\t\tPuerto en el que escuchará/enviará el cliente.\n");
+    printf(" -a <address>\t--address <address>\tDirección en la que se encuentra el servidor.\n");
+    printf(" -r <remote port>\t--remote_port <remote_port>\t\tPuerto por el que escucha el servidor.\n");
+    printf(" -f <file>\t--file <file>\t\tArchivo de texto a pasar a mayúsculas.\n");    
     printf(" -h\t\t--help\t\t\tMostrar este texto de ayuda y salir.\n");
 
     /** Consideraciones adicionales **/
-    printf("\nPuede especificarse el parámetro <port> para el puerto en el que escucha el servidor sin escribir la opción '-p', siempre y cuando este sea el primer parámetro que se pasa a la función.\n");
- /*   printf("\nSi no se especifica alguno de los argumentos, el servidor se ejecutará con su valor por defecto, a saber: DEFAULT_PORT=%u; DEFAULT_BACKLOG=%d, DEFAULT_LOG=%s\n", DEFAULT_PORT, DEFAULT_BACKLOG, DEFAULT_LOG);*/
-    printf("\nSi se especifica varias veces un argumento, o se especifican las opciones \"--log\" y \"--no-log\" a la vez, el comportamiento está indefinido.\n");
+    printf("\nPuede especificarse el parámetro <port> para el puerto en el que escucha/envia el cliente sin escribir la opción '-p', siempre y cuando este sea el primer parámetro que se pasa a la función.\n");
 }
 
 

@@ -11,11 +11,11 @@
  * y la dirección del emisor con el que se está comunicando.
  */
 typedef struct {
-    int socket;         /* Socket asociado al receivere por el que conectarse a un servidor y comunicarse con él */
+    int socket;         /* Socket asociado al receiver por el que recibir información de un tercero */
     int domain;         /* Dominio de comunicación. Especifica la familia de protocolos que se usan para la comunicación */
     int type;           /* Tipo de protocolo usado para el socket */
     int protocol;       /* Protocolo particular usado en el socket */
-    char* sender_ip;    /* IP del servidor al que conectarse (en formato textual) */
+    char* sender_ip;    /* IP del emisor que envía la información (en formato textual) */
     uint16_t receiver_port;      /* Puerto por el que recibe información el receptor(en orden de host) */
     uint16_t sender_port;   /* Puerto usado por el emisor para enviar datos (en orden de host) */
     struct sockaddr_in receiver_address;       /* Estructura con el dominio de comunicación e IP y puerto por los que se comunica el receiver */
@@ -24,9 +24,9 @@ typedef struct {
 
 
 /**
- * @brief   Crea un receivere.
+ * @brief   Crea un receiver.
  *
- * Crea un receivere nuevo con un nuevo socket, y guarda en él la información necesaria
+ * Crea un receiver nuevo con un nuevo socket, y guarda en él la información necesaria
  * sobre el servidor para posteriormente poder conectarse con él.
  *
  * @param domain        Dominio de comunicación. 

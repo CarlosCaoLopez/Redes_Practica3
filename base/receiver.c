@@ -13,34 +13,30 @@
 
 #define MAX_BYTES_RECV 128
 
-//#define BUFFER_LEN 64
 
 
 /**
- * @brief   Crea un receivere.
+ * @brief   Crea un receiver.
  *
- * Crea un receivere nuevo con un nuevo socket, y guarda en él la información necesaria
- * sobre el servidor para posteriormente poder conectarse con él.
+ * Crea un receiver nuevo con un nuevo socket, y guarda en él la información necesaria.
  *
  * @param domain        Dominio de comunicación. 
  * @param type          Tipo de protocolo usado para el socket.
  * @param protocol      Protocolo particular a usar en el socket. Normalmente solo existe
  *                      un protocolo para la combinación dominio-tipo dada, en cuyo caso se
  *                      puede especificar con un 0.
- * @param sender_ip     Dirección IP del servidor al que conectarse (en formato textual).
- * @param sender_port   Número de puerto en el que escucha el servidor (en orden de host).
+ * @param receiver_port Número de puerto en el que escucha el receiver.
  *
- * @return  Receivere que guarda toda la información relevante sobre sí mismo con la que
- *          fue creado, y con un socket abierto en el cual está listo para conectarse 
- *          al servidor con la IP y puerto especificados.
+ * @return  Receiver que guarda toda la información relevante sobre sí mismo con la que
+ *          fue creado, y con un socket abierto en el cual está listo para recibir información.
  */
 Receiver create_receiver(int domain, int type, int protocol, uint16_t receiver_port) {
     Receiver receiver;
-    //char buffer[BUFFER_LEN] = {0};
+    
 
     memset(&receiver, 0, sizeof(Receiver));     /* Inicializar los campos a 0 */
 
-    receiver = (Receiver) {
+    receiver = (Receiver){
         .domain = domain,
         .type = type,
         .protocol = protocol,
@@ -49,14 +45,7 @@ Receiver create_receiver(int domain, int type, int protocol, uint16_t receiver_p
         .receiver_address.sin_port = htons(receiver_port),
         .receiver_address.sin_addr = INADDR_ANY,
     };
-  /*  if (inet_pton(receiver.domain, receiver_ip, &(receiver.receiver_address.sin_addr)) != 1) {   //La string no se pudo traducir a una IP válida 
-        fprintf(stderr, "La IP especificada no es válida\n\n");
-        exit(EXIT_FAILURE);
-    }*/
 
-    /* Guardar la IP propia en formato textual */
-   // receiver.ip = (char *) calloc(strlen(receiver_ip) + 1, sizeof(char));
-    //strcpy(receiver.ip, receiver_ip);
     
     /*Reservamos memoria para la IP del emsisor */
     receiver.sender_ip = (char *) calloc(INET_ADDRSTRLEN, sizeof(char));
@@ -78,10 +67,10 @@ Receiver create_receiver(int domain, int type, int protocol, uint16_t receiver_p
 /**
  * @brief   Cierra el receivere.
  *
- * Cierra el socket asociado al receivere y libera toda la memoria
+ * Cierra el socket asociado al receiver y libera toda la memoria
  * reservada para el receivere.
  *
- * @param receiver    Receivere a cerrar.
+ * @param receiver    Receiver a cerrar.
  */
 
 void close_receiver(Receiver* receiver) {
